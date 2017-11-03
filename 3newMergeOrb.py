@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import basicFun as bf
 import datetime
 import os
-from geo2mag.geo2mag_coord import loopcoord
+# from geo2mag.geo2mag_coord import loopcoord
 from scipy.interpolate import interp1d
 
 oschamp = 'D:\\sattelite data\\CHAMP\\CH-ME-2-PLP\\'
@@ -87,10 +87,10 @@ def searchROC(data, ut, midlon):
         a = data[state].split()
         utr = float(a[1][:2]) + float(a[1][3:5]) / 60 + float(a[1][6:8]) / 3600
 
-    dstate, merlat = chaMERroc(roc, midlon)
+    dstate, mermlat = chaMERroc(roc, midlon)
     roc2 = []
     state = state-dstate
-    mermlat = float(list(loopcoord((merlat, midlon)).mlat)[0])
+    # mermlat = float(list(loopcoord((merlat, midlon)).mlat)[0])
     # print('mlat='+format(mermlat, '.2f'))
     # print(merlat)
 
@@ -118,15 +118,16 @@ def searchROC(data, ut, midlon):
 def chaMERroc(roc, midlon):
     dlon = 100
     state = 0
-    lat = 100
+    diplat = 100
     for i in range(len(roc)):
         a = roc[i].split()
         lon = float(a[16])
         if dlon > abs(lon-midlon):
             dlon = abs(lon - midlon)
             state = i
-            lat = float(a[15])
-    return len(roc)-state, lat
+            # lat = float(a[15])
+            diplat = float(a[17])
+    return len(roc) - state, diplat
 
 def outtext(cha, roc, midlon, midut):
     chaout = []
@@ -153,7 +154,10 @@ def outtext(cha, roc, midlon, midut):
             b[2] = float(a[7])
             b[3] = float(a[9])
             b[4] = float(a[17])
-            rocout.append(str(b).replace('[','').replace(']','')+'\n')
+            bout = ''
+            for i in range(5):
+                bout = bout + format(b[i], '.2f') + ' '
+            rocout.append(bout + '\n')
             # fout.write(str(b).replace('[','').replace(']','')+'\n')
     fout.write('ROCSAT ' + str(len(rocout)) + '\n')
     fout.write('UT LT VperM LogN DipLat\n')
