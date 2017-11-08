@@ -6,6 +6,46 @@ import os
 # from geo2mag.geo2mag_coord import loopcoord
 from scipy.interpolate import interp1d
 
+# ut0 lt1 Vpm2 lgN3 Diplat4 glat5 glon6
+class Orb(object):
+    def __init__(self):
+        self.name = 'not define'
+        self.lenth = 0
+        self.data = []
+        self.midlon = 0.
+        self.midut = 0.
+    def insert(self, a):
+        self.data.append(a)
+    def latden(self):
+        xtemp = 0
+        ytemp = 0
+        alldata = self.data
+        if self.name == 'CHAMP':
+            xtemp = 8
+            ytemp = 10
+            # alldata = [x.split() for x in alldata]
+        elif self.name == 'ROCSAT':
+            xtemp = 4
+            ytemp = 3
+        else:
+            print('Error')
+        lat = [float(x[xtemp]) for x in alldata]
+        den = [float(x[ytemp]) for x in alldata]
+        plt.plot(lat, den)
+        plt.show()
+    def clear(self):
+        self.data.clear()
+    def outtext(self):
+        fout.write(self.name+' '+str(self.lenth)+' '+format(self.midlon, '.2f')+' '+format(self.midut, '.2f')+'\n')
+        if self.name == 'CHAMP':
+            fout.write('GPS yy mm dd hh mm ss radius lat lon den (Temperature)\n')
+        elif self.name == 'ROCSAT':
+            fout.write('ut lt Vpm lgN Diplat glat glon\n')
+        for i in range(self.lenth):
+            outstr = str(self.data[i]).replace('[', '').replace(']', '').replace(',', ' ').replace('\n', '')
+            outstr = outstr.replace("'", '')
+            fout.write(outstr + '\n')
+
 oschamp = 'D:\\sattelite data\\CHAMP\\CH-ME-2-PLP\\'
 osroc = 'D:\\sattelite data\\ROCSAT\\IPEI\\'
 def datetran(date, num):
@@ -26,143 +66,106 @@ def datetran(date, num):
 
 #GPS0 yy1 mm2 dd3 hh4 mm5 ss6 radius7 lat8 lon9 den10 (Temperature)
 def searchCHA(data, state):
-    cha = []
-    midlon = 0
-    midut = 0
-    yy = 0
-    mm = 0
-    dd = 0
-    hh = 0
-    days=0
+    cha = Orb()
+    cha.name = 'CHAMP'
     #找到轨道起始位置
     for i in range(state, len(data)):
         a = data[i].split()
-        lat = float(a[8])
-        if lat>-70 and lat < 70:
+        lat, lon = float(a[8]), float(a[9])
+        if lat > zs([lon])[0] and lat < zn([lon])[0]:
             state = i
             break
     a = data[state].split()
-    lat = float(a[8])
+    lat, lon = float(a[8]), float(a[9])
     #获得轨道
-    midlat = 100
-    while lat >-70 and lat<70 and state<len(data)-1:
-        cha.append(data[state])
+    while lat > zs([lon])[0] and lat < zn([lon])[0] and state < len(data)-1:
         state = state+1
         a = data[state].split()
+        cha.insert(a)
         lat = float(a[8])
-        if abs(lat) < midlat:
-            midlat = abs(lat)
-            midut = float(a[4])+float(a[5])/60+float(a[6])/3600
-            midlon = float(a[9])
-            yy = float(a[1])
-            mm = float(a[2])
-            dd = float(a[3])
-            hh = float(a[4])
-            days = bf.orderday(str(int(yy))+str(100+int(mm))[1:3]+str(100+int(dd))[1:3])
-    midlt = (midut + midlon/15)%24
-    if midlt < 17 or midlt > 23:
-        cha.clear()
-    if len(cha) > 0:
+        lon = float(a[9])
+    #获取参量
+    if len(cha.data)>0:
+        datatemp = cha.data
+        cha.midlon = np.median([float(x[9]) for x in datatemp])
+        cha.midut = np.median([float(x[4])+float(x[5])/60+float(x[6])/3600 for x in datatemp])
+        midlt = (cha.midut + cha.midlon / 15) % 24
+        # print(cha.midlon, cha.midut, midlt)
+        yy, mm, dd = float(a[1]), float(a[2]), float(a[3])
+        hh = np.median([float(x[4]) for x in datatemp])
+        days = bf.orderday(str(int(yy)) + str(100 + int(mm))[1:3] + str(100 + int(dd))[1:3])
+        if midlt < 17 or midlt > 23:
+            cha.clear()
         if bf.isMagstorm(int(yy), int(days), int(hh), value):
             cha.clear()
-
-    return cha, midlon, midut, state
+    cha.lenth = len(cha.data)
+    return cha, state+1
 
 #roc 0Date 1HHMMSS 2LHLMLS 3Vx_rpy 4Vy_rpy 5Vz_rpy  6Vpar  7VperM 8VperZ  9LogN  10Temp 11O+ 12H 13He 14NO 15GLAT 16GLON 17DipLat 18ALT
-def searchROC(data, ut, midlon):
-    roc=[]
-    state = 0
-    dtime = 0.8
-    for i in range(1, len(data)):
+def searchROC(data, state):
+    roc = Orb()
+    roc.name = 'ROCSAT'
+    # 寻找轨道起点
+    for i in range(state, len(data)):
         a = data[i].split()
-        utr = float(a[1][:2])+float(a[1][3:5])/60+float(a[1][6:8])/3600
-        if utr < ut+dtime and utr>ut-dtime:
+        diplat = float(a[17])
+        if diplat <= 20. and diplat >= -20.:
             state = i
             break
     a = data[state].split()
-    utr = float(a[1][:2]) + float(a[1][3:5]) / 60 + float(a[1][6:8]) / 3600
-    while utr < ut+dtime and utr>ut-dtime and state<len(data)-1:
-        roc.append(data[state])
+    diplat = float(a[17])
+    #获得轨道
+    while state < len(data)-1 and diplat > -20. and diplat < 20.:
+        a = data[state].split()
+        b = [0]*7
+        b[0] = round(float(a[1][:2]) + float(a[1][3:5]) / 60 + float(a[1][6:8]) / 3600, 2) #ut
+        b[1] = round(float(a[2][:2]) + float(a[2][3:5]) / 60 + float(a[2][6:8]) / 3600, 2) #lt
+        b[2] = float(a[7]) #Vpm
+        b[3] = float(a[9]) #lgN
+        b[4] = float(a[17]) #Diplat
+        b[5] = float(a[15]) #glat
+        b[6] = float(a[16]) #glon
+        roc.insert(b)
         state = state+1
-        a = data[state].split()
-        utr = float(a[1][:2]) + float(a[1][3:5]) / 60 + float(a[1][6:8]) / 3600
+        diplat = b[4]
+    if len(roc.data) > 0:
+        datatemp = roc.data
+        roc.midlon = np.median([float(x[6]) for x in datatemp])
+        roc.midut = np.median([float(x[0]) for x in datatemp])
+        midlt = (roc.midut + roc.midlon / 15) % 24
+        if midlt < 0 or midlt > 24:
+            roc.clear()
+    roc.lenth = len(roc.data)
+    return roc, state+15
 
-    dstate, mermlat = chaMERroc(roc, midlon)
-    roc2 = []
-    state = state-dstate
-    # mermlat = float(list(loopcoord((merlat, midlon)).mlat)[0])
-    # print('mlat='+format(mermlat, '.2f'))
-    # print(merlat)
-
-    if abs(mermlat)<20:
-        a = data[state].split()
-        lat = float(a[15])
-        # print(lat)
-        while lat > -30 and lat<30 and state>1:
-            state = state-1
-            a = data[state].split()
-            lat = float(a[15])
-        # print(lat)
-        # print(state)
-        for i in range(state, len(data)):
-            # print(lat)
-            roc2.append(data[i])
-            a = data[i].split()
-            lat = float(a[15])
-            if lat > 31 or lat < -31:
-                break
-    else:
-        roc2.clear()
-    return roc2
-
-def chaMERroc(roc, midlon):
-    dlon = 100
-    state = 0
-    diplat = 100
-    for i in range(len(roc)):
-        a = roc[i].split()
-        lon = float(a[16])
-        if dlon > abs(lon-midlon):
-            dlon = abs(lon - midlon)
-            state = i
-            # lat = float(a[15])
-            diplat = float(a[17])
-    return len(roc) - state, diplat
-
-def outtext(cha, roc, midlon, midut):
-    chaout = []
-    for i in range(len(cha)):
-        a = cha[i].split()
-        glat = float(a[8])
-        glon = float(a[9])
-        if glat< zn(glon) and glat>zs(glon):
-            chaout.append(cha[i])
-    fout.write('CHAMP ' + str(len(chaout)) + ' ' + format(midlon, '.2f') + ' ' + format(midut, '.2f') + '\n')
-    fout.write('GPS yy mm dd hh mm ss radius lat lon den (Temperature)\n')
-    for i in range(len(chaout)):
-        fout.write(chaout[i])
-
-    rocout = []
-    for i in range(len(roc)):
-        a = roc[i].split()
-        diplat = float(a[17])
-        #UT LT VperM LogN DipLat
-        if abs(diplat)<20:
-            b = np.zeros(5)
-            b[0] = float(a[1][:2])+float(a[1][3:5])/60+float(a[1][6:8])/3600
-            b[1] = float(a[2][:2])+float(a[2][3:5])/60+float(a[2][6:8])/3600
-            b[2] = float(a[7])
-            b[3] = float(a[9])
-            b[4] = float(a[17])
-            bout = ''
-            for i in range(5):
-                bout = bout + format(b[i], '.2f') + ' '
-            rocout.append(bout + '\n')
-            # fout.write(str(b).replace('[','').replace(']','')+'\n')
-    fout.write('ROCSAT ' + str(len(rocout)) + '\n')
-    fout.write('UT LT VperM LogN DipLat\n')
-    for i in range(len(rocout)):
-        fout.write(rocout[i])
+temp = 0
+def chaMERroc(chalist, roclist):
+    # print(0)
+    for i in range(len(chalist)):
+        cha = chalist[i]
+        rocout = chalist[i]
+        dlttemp = 100
+        dlontemp = 1000
+        for j in range(len(roclist)):
+            roc = roclist[j]
+            # print(cha.midut, roc.midut)
+            # print(cha.midlon, roc.midlon)
+            cmidlt = (cha.midut + cha.midlon/15.)%24
+            rmidlt = (roc.midut + roc.midlon/15.)%24
+            dlt = min(abs(cmidlt-rmidlt), abs(cmidlt-rmidlt+24), abs(cmidlt-rmidlt-24))
+            dlon = min(abs(cha.midlon-roc.midlon), abs(cha.midlon-roc.midlon+360), abs(cha.midlon-roc.midlon-360))
+            # if dlon < dlontemp:
+            #     dlontemp = dlon
+            if dlt < dlttemp:
+                dlttemp = dlt
+                dlontemp =dlon
+                rocout = roc
+        # dlonlsit.append(dlontemp)
+        # dltlist.append(dlttemp)
+        if dlttemp < 1. and dlontemp < 180:
+            cha.outtext()
+            rocout.outtext()
+            dlonlsit.append(0)
 
 def mergeouttext(date):
     num = 1
@@ -172,35 +175,40 @@ def mergeouttext(date):
         if os.path.exists(champfilename) and os.path.exists(osroc + rocname):
             datacha = bf.readfile(champfilename)
             dataroc = bf.readfile(osroc + rocname)
+            chalist = []
+            roclist = []
+            #CHAMP
             state = 18
-            midut = 0.01
-            while state < len(datacha)-1 and midut>0.001:
-                cha, midlon, midut, state = searchCHA(datacha, state)
-                # print(state, midut)
-                if len(cha) != 0:
-                    roc = searchROC(dataroc, midut, midlon)
-                    if len(roc) != 0:
-                        # print(len(cha))
-                        # print(len(roc))
-                        outtext(cha, roc, midlon, midut)
-            # print(1111)
+            while state < len(datacha)-1:
+                cha, state = searchCHA(datacha, state)
+                if cha.lenth != 0:
+                    chalist.append(cha)
+                    # cha.latden()
             num = 5
+            #ROCSAT
+            state = 2
+            while state < len(dataroc)-1:
+                roc, state = searchROC(dataroc, state)
+                if roc.lenth > 0:
+                    roclist.append(roc)
+                    # roc.latden()
+            #merge
+            chaMERroc(chalist, roclist)
         else:
             num = num + 1
+
+value = bf.magstormexcle()
 
 def test():
     for year in range(2001, 2005):
         for month in range(1, 13):
-            for day in range(1, 32):
+            for day in range(1, 33):
                 date = str(year)+str(month+100)[1:3]+str(day+100)[1:3]
-                print(date)
+                # print(date)
                 try:
                     mergeouttext(date)
                 except:
-                    print('error!')
-                    print(date)
-
-value = bf.magstormexcle()
+                    print('error!'+str(date))
 
 def magline( ns):#input longitude output 40 maglat
     #type of ns is bool,north=true
@@ -221,7 +229,17 @@ def magline( ns):#input longitude output 40 maglat
 zn = magline(True)
 zs = magline(False)
 
+dlonlsit = []
+dltlist = []
 if __name__ == '__main__':
-    fout = open('merged.txt', 'w+')
+    fout = open('merged180.txt', 'w+')
     test()
+    # plt.subplot(2, 1, 1)
+    # plt.scatter(range(len(dlonlsit)), dlonlsit, s=1)
+    # # plt.ylim(0, 20)
+    # plt.subplot(2, 1, 2)
+    # plt.scatter(range(len(dltlist)), dltlist, s=1)
+    # # plt.ylim(0, 6)
+    # plt.show()
     fout.close()
+    print(len(dlonlsit))
