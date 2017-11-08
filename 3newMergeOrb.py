@@ -1,10 +1,13 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import basicFun as bf
 import datetime
 import os
+
+import matplotlib.pyplot as plt
+import numpy as np
 # from geo2mag.geo2mag_coord import loopcoord
 from scipy.interpolate import interp1d
+
+import basicFun as bf
+
 
 # ut0 lt1 Vpm2 lgN3 Diplat4 glat5 glon6
 class Orb(object):
@@ -162,7 +165,7 @@ def chaMERroc(chalist, roclist):
                 rocout = roc
         # dlonlsit.append(dlontemp)
         # dltlist.append(dlttemp)
-        if dlttemp < 1. and dlontemp < 180:
+        if dlttemp < 1. and dlontemp < 90:
             cha.outtext()
             rocout.outtext()
             dlonlsit.append(0)
@@ -232,7 +235,7 @@ zs = magline(False)
 dlonlsit = []
 dltlist = []
 if __name__ == '__main__':
-    fout = open('merged180.txt', 'w+')
+    fout = open('merged90.txt', 'w+')
     test()
     # plt.subplot(2, 1, 1)
     # plt.scatter(range(len(dlonlsit)), dlonlsit, s=1)
