@@ -165,7 +165,7 @@ def chaMERroc(chalist, roclist):
                 rocout = roc
         # dlonlsit.append(dlontemp)
         # dltlist.append(dlttemp)
-        if dlttemp < 1. and dlontemp < 90:
+        if dlttemp < 1. and dlontemp < 45:
             cha.outtext()
             rocout.outtext()
             dlonlsit.append(0)
@@ -235,7 +235,7 @@ zs = magline(False)
 dlonlsit = []
 dltlist = []
 if __name__ == '__main__':
-    fout = open('merged90.txt', 'w+')
+    fout = open('merged45.txt', 'w+')
     test()
     # plt.subplot(2, 1, 1)
     # plt.scatter(range(len(dlonlsit)), dlonlsit, s=1)
