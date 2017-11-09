@@ -112,13 +112,13 @@ def searchROC(data, state):
     for i in range(state, len(data)):
         a = data[i].split()
         diplat = float(a[17])
-        if diplat <= 20. and diplat >= -20.:
+        if diplat <= 15. and diplat >= -15.:
             state = i
             break
     a = data[state].split()
     diplat = float(a[17])
     #获得轨道
-    while state < len(data)-1 and diplat > -20. and diplat < 20.:
+    while state < len(data) - 1 and diplat > -15. and diplat < 15.:
         a = data[state].split()
         b = [0]*7
         b[0] = round(float(a[1][:2]) + float(a[1][3:5]) / 60 + float(a[1][6:8]) / 3600, 2) #ut
@@ -165,7 +165,7 @@ def chaMERroc(chalist, roclist):
                 rocout = roc
         # dlonlsit.append(dlontemp)
         # dltlist.append(dlttemp)
-        if dlttemp < 1. and dlontemp < 45:
+        if dlttemp < 1 and dlontemp < 15:
             cha.outtext()
             rocout.outtext()
             dlonlsit.append(0)
@@ -235,7 +235,7 @@ zs = magline(False)
 dlonlsit = []
 dltlist = []
 if __name__ == '__main__':
-    fout = open('merged45.txt', 'w+')
+    fout = open('merged15_1.txt', 'w+')
     test()
     # plt.subplot(2, 1, 1)
     # plt.scatter(range(len(dlonlsit)), dlonlsit, s=1)
