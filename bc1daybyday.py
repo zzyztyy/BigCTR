@@ -97,7 +97,8 @@ def daypic(date):
         else:
             num = num+1
 
-def sort2(l1, l2):#按l2大小为l1排序
+
+def sort2(l1, l2):  # 按l2大小为l1排序
     l3 = []
     for i in range(len(l1)):
         l3.append([l1[i], l2[i]])

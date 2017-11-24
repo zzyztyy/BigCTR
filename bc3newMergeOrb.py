@@ -1,11 +1,8 @@
 import datetime
 import os
-
 import matplotlib.pyplot as plt
 import numpy as np
-# from geo2mag.geo2mag_coord import loopcoord
 from scipy.interpolate import interp1d
-
 import basicFun as bf
 
 
@@ -55,7 +52,8 @@ def datetran(date, num):
     year = (date[:4])
     month = (date[4:6])
     day = (date[6:])
-    champname = year + '\\CH-ME-2-PLP+'+year+'-'+month+'-'+day+'_'+str(num)+'.dat'
+    champname = year + '\\CH-ME-2-PLP+' + year + '-' + month + '-' + day + '_' + namelast[num] + '.dat'
+    # print(champname)
     dd = datetime.datetime.strptime(date, "%Y%m%d")
     days = dd.timetuple().tm_yday
     if days < 10:
@@ -170,8 +168,10 @@ def chaMERroc(chalist, roclist):
             rocout.outtext()
             dlonlsit.append(0)
 
+
+namelast = ['1', '2', '3', '4', '21']
 def mergeouttext(date):
-    num = 1
+    num = 0
     while num <= 4:
         champname, rocname = datetran(date, num)
         champfilename = oschamp + champname
@@ -202,23 +202,113 @@ def mergeouttext(date):
 
 value = bf.magstormexcle()
 
-def test():
+
+def staticLT(LT, date):
+    num = 0
+    while num <= 4:
+        champname, rocname = datetran(date, num)
+        champfilename = oschamp + champname
+        if os.path.exists(champfilename) and os.path.exists(osroc + rocname):
+            datacha = bf.readfile(champfilename)
+            dataroc = bf.readfile(osroc + rocname)
+            chalist = []
+            roclist = []
+            # CHAMP
+            state = 18
+            while state < len(datacha) - 1:
+                cha, state = searchCHA(datacha, state)
+                # print((cha.midut+cha.midlon/15.) % 24)
+                if cha.lenth != 0 and abs((cha.midut + cha.midlon / 15.) % 24 - LT) < 0.25:
+                    chalist.append(cha)
+            num = 5
+            # ROCSAT
+            state = 2
+            while state < len(dataroc) - 1:
+                roc, state = searchROC(dataroc, state)
+                if roc.lenth > 0 and abs((roc.midut + roc.midlon / 15.) % 24 - LT) < 0.25:
+                    roclist.append(roc)
+                    # roc.latden()
+            # draw
+            staticdraw(chalist, roclist, LT)
+        else:
+            num = num + 1
+
+
+def staticdraw(chalist, roclist, LT):
+    plt.subplot(3, 1, 2)
+    roc = Orb()
+    for i in range(len(chalist)):
+        cha = chalist[i]
+        draw(cha.data, roc.data, LT)
+    cha = Orb()
+    for i in range(len(roclist)):
+        roc = roclist[i]
+        draw(cha.data, roc.data, LT)
+
+
+def draw(chadata, rocdata, lt):
+    den = []
+    lat = []
+    lgN = []
+    Vpm = []
+    latr = []
+    # print(chadata[0])
+    for i in range(len(chadata)):
+        a = chadata[i]
+        den.append(np.log10(float(a[10])))
+        lat.append(float(a[8]) - z0([float(a[9])])[0])
+        # print(lt, loctime)
+        # dltc.append(np.median([-3, loctime-lt, 3]))
+    for i in range(len(rocdata)):
+        b = rocdata[i]
+        dlt = min(abs(float(b[1]) - lt), abs(float(b[1]) - lt + 24), abs(float(b[1]) - lt - 24))
+        if dlt < 0.5:
+            latr.append(float(b[4]))
+            lgN.append(float(b[3]))
+            Vpm.append(float(b[2]))
+    bf.sort2(lgN, latr)
+    bf.sort2(Vpm, latr)
+    bf.sort2(latr, latr)
+    if len(Vpm) > 60:
+        Vpm2 = bf.smooth(Vpm, 60)
+    else:
+        Vpm2 = Vpm
+    # if len(lgN)
+    # lgN2 = bf.smooth(lgN, 10)
+    plt.subplot(3, 1, 1)
+    plt.plot(latr, lgN, linewidth=1, c='k', alpha=0.2)
+    plt.xlim(-20, 20)
+    plt.ylim(4.5, 6.5)
+    plt.subplot(3, 1, 2)
+    plt.plot(latr, Vpm2, linewidth=1, c='k', alpha=0.2)
+    plt.xlim(-20, 20)
+    plt.ylim(-75, 75)
+    plt.subplot(3, 1, 3)
+    plt.plot(lat, den, linewidth=1, c='k', alpha=0.2)
+    plt.axis([-20, 20, 3.5, 7])
+
+
+def test(loctime):
+    plt.figure(figsize=[10, 10], dpi=300)
+    plt.subplots_adjust(hspace=0.1, left=0.1, bottom=0.05, right=0.97, top=0.97)
     for year in range(2001, 2005):
         for month in range(1, 13):
-            for day in range(1, 33):
+            for day in range(1, 32):
                 date = str(year)+str(month+100)[1:3]+str(day+100)[1:3]
                 # print(date)
                 try:
-                    mergeouttext(date)
+                    staticLT(loctime + 0.25, date)
                 except:
                     print('error!'+str(date))
+    plt.subplot(3, 1, 1)
+    plt.title(str(loctime) + 'LT')
+    plt.savefig(str(loctime) + '.png')
+    plt.close()
 
-def magline( ns):#input longitude output 40 maglat
+
+def magline(maglat):  # input longitude output 40 maglat
+    f = open(str(maglat) + 'maglatline.txt', 'r')
     #type of ns is bool,north=true
-    if ns:
-        f = open("50maglatline.txt", 'r')
-    else:
-        f = open("-50maglatline.txt", 'r')
     ml = f.readlines()
     y = []
     x = []
@@ -229,20 +319,19 @@ def magline( ns):#input longitude output 40 maglat
     z = interp1d(x, y, kind='cubic')
     return z
 
-zn = magline(True)
-zs = magline(False)
+
+zn = magline(50)
+zs = magline(-50)
+z0 = magline(0)
 
 dlonlsit = []
 dltlist = []
+fout = open('a.txt', 'w+')
 if __name__ == '__main__':
-    fout = open('merged15_1.txt', 'w+')
-    test()
-    # plt.subplot(2, 1, 1)
-    # plt.scatter(range(len(dlonlsit)), dlonlsit, s=1)
-    # # plt.ylim(0, 20)
-    # plt.subplot(2, 1, 2)
-    # plt.scatter(range(len(dltlist)), dltlist, s=1)
-    # # plt.ylim(0, 6)
-    # plt.show()
-    fout.close()
-    print(len(dlonlsit))
+    # fout = open('merged15_1.txt', 'w+')
+    for i in range(17, 23):
+        print(i)
+        test(i * 1.)
+        test(i + 0.5)
+        # fout.close()
+        # print(len(dlonlsit))
