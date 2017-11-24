@@ -1,3 +1,3 @@
 # BigCTR
-analysis too big CTR
+Analysis too high CTR
 by using CHAMP and ROCSAT satellite
