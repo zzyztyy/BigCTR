@@ -2,9 +2,7 @@ import datetime
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import interp1d
 import basicFun as bf
-
 
 # ut0 lt1 Vpm2 lgN3 Diplat4 glat5 glon6
 class Orb(object):
@@ -307,23 +305,9 @@ def test(loctime):
     plt.close()
 
 
-def magline(maglat):  # input longitude output 40 maglat
-    f = open(str(maglat) + 'maglatline.txt', 'r')
-    #type of ns is bool,north=true
-    ml = f.readlines()
-    y = []
-    x = []
-    for i in range(len(ml)):
-        a = ml[i].split()
-        y.append(float(a[0]))
-        x.append(float(a[1]))
-    z = interp1d(x, y, kind='cubic')
-    return z
-
-
-zn = magline(50)
-zs = magline(-50)
-z0 = magline(0)
+zn = bf.magline(50)
+zs = bf.magline(-50)
+z0 = bf.magline(0)
 
 dlonlsit = []
 dltlist = []

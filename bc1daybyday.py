@@ -137,17 +137,6 @@ def merge(orb, roc):
     lat = sort2(lat, lat)
     return lat, lon, dlt, lgN, vpm
 
-def magline():#input longitude output 0 maglat
-    f = open("0maglatline.txt", 'r')
-    ml = f.readlines()
-    y = []
-    x = []
-    for i in range(len(ml)):
-        a = ml[i].split()
-        y.append(float(a[0]))
-        x.append(float(a[1]))
-    z = interp1d(x, y, kind='cubic')
-    return z
 
 cmap = ['Greys', 'Blues', 'Reds', 'PuRd', 'Greens', 'autumn']
 color = ['k', 'b', 'r', 'purple', 'g', 'y']
@@ -156,7 +145,7 @@ def draw(orbit, roc, temp, timetemp):
     den = list()
     middot = orbit[int(len(orbit) / 2)]
     midlon = float(middot[9])
-    midmlat = magline()(float(midlon))
+    midmlat = bf.magline(0)(float(midlon))
     midlt = (middot[4] + middot[5] / 60. + middot[6] / 3600. + middot[9] / 15.) % 24
     # print(midlt)
     if midlt > 17. and midlt < 23. and float(middot[4]) < timetemp:
@@ -227,7 +216,7 @@ def daytext(date):
 def outtext(orbit, roc):
     middot = orbit[int(len(orbit) / 2)]
     midlon = float(middot[9])
-    midmlat = magline()(float(midlon))
+    midmlat = bf.magline(0)(float(midlon))
     midlt = (middot[4] + middot[5] / 60. + middot[6] / 3600. + middot[9] / 15.) % 24
     if midlt > 17. and midlt < 23.:
         latr, lonr, lt, lgN, vpm = merge(orbit, roc)
