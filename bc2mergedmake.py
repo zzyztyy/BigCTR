@@ -38,14 +38,14 @@ def getoneorb(text, startline):
 #GPS0 yy1 mm2 dd3 hh4 mm5 ss6 radius7 lat8 lon9 den10 (Temperature)
 # ut0 lt1 Vpm2 lgN3 Diplat4 glat5 glon6
 def draw(cha, roc, lt):
-    # plt.figure(figsize=[10, 10], dpi=300)
-    # plt.subplots_adjust(hspace=0.1, left=0.1, bottom=0.05, right=0.97, top=0.97)
+    plt.figure(figsize=[10, 10], dpi=300)
+    plt.subplots_adjust(hspace=0.1, left=0.1, bottom=0.05, right=0.97, top=0.97)
     den = []
     lat = []
     lgN = []
     Vpm = []
     latr = []
-    dlt = []
+    dltr = []
     dltc = []
     for i in range(len(cha)):
         a = cha[i].split()
@@ -53,15 +53,15 @@ def draw(cha, roc, lt):
         lat.append(float(a[8]))
         loctime = (float(a[4]) + float(a[5]) / 60 + float(a[6]) / 3600 + (float(a[9]) - 72) / 15.) % 24
         # print(lt, loctime)
-        # dltc.append(np.median([-3, loctime-lt, 3]))
+        dltc.append(np.median([-1, loctime - lt, 1]))
     for i in range(len(roc)):
         b = roc[i].split()
         dlt = min(abs(float(b[1]) - lt), abs(float(b[1]) - lt + 24), abs(float(b[1]) - lt - 24))
-        if dlt < 0.5:
+        if dlt < 1:
             latr.append(float(b[4]))
             lgN.append(float(b[3]))
             Vpm.append(float(b[2]))
-            # dlt.append(np.median([-3, float(b[1])-lt, 3]))
+            dltr.append(np.median([-1, float(b[1]) - lt, 1]))
     bf.sort2(lgN, latr)
     bf.sort2(Vpm, latr)
     bf.sort2(latr, latr)
@@ -82,19 +82,19 @@ def draw(cha, roc, lt):
     # if len(lgN)
     # lgN2 = bf.smooth(lgN, 10)
     plt.subplot(3, 1, 1)
-    # plt.scatter(latr, lgN, s=1, c=dlt, cmap='winter', vmax=3, vmin=-3)
+    plt.scatter(latr, lgN, s=1, c=dltr, cmap='brg', vmax=1, vmin=-1)
     plt.plot(latr, lgN, linewidth=1)
     # plt.axis([-50, 50, 3, 9])
     plt.xlim(-20, 20)
     plt.ylim(4.5, 6.5)
     plt.subplot(3, 1, 2)
-    # plt.scatter(latr, Vpm, s=1, c=dlt, cmap='winter', vmax=3, vmin=-3)
+    plt.scatter(latr, Vpm, s=1, c=dltr, cmap='brg', vmax=1, vmin=-1)
     plt.plot(latr, Vpm2, linewidth=1)
     # plt.axis([-50, 50, -150, 150])
     plt.xlim(-20, 20)
     plt.ylim(-75, 75)
     plt.subplot(3, 1, 3)
-    # plt.scatter(lat, den, s=15, c=dltc, cmap='winter', vmax=3, vmin=-3)
+    plt.scatter(lat, den, s=15, c=dltc, cmap='brg', vmax=1, vmin=-1)
     plt.plot(lat, den, linewidth=1)
     plt.axis([-20, 20, 3.5, 7])
     # plt.show()
@@ -259,12 +259,12 @@ if __name__ == '__main__':
     # files = os.listdir('mergedOrbqd')
     # for file in files:
     #     try:
-    # daydraw('merged15_1qd.txt')
-    #     except:
-    #         print(file)
+    daydraw('merged15_1qd.txt')
+    # except:
+    #     print(file)
     # for i in range(17, 23):
-    lt = 17.0
-    while lt < 22.9:
-        drawtogether(lt)
-        lt = lt + 0.5
+    # lt = 17.0
+    # while lt < 22.9:
+    #     drawtogether(lt)
+    #     lt = lt + 0.5
         # plt.savefig('a.png')

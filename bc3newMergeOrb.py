@@ -89,13 +89,14 @@ def searchCHA(data, state):
     if len(cha.data)>0:
         datatemp = cha.data
         cha.midlon = np.median([float(x[9]) for x in datatemp])
-        cha.midut = np.median([float(x[4])+float(x[5])/60+float(x[6])/3600 for x in datatemp])
+        utarr = [float(x[4]) + float(x[5]) / 60 + float(x[6]) / 3600 for x in datatemp]
+        cha.midut = np.median([(x - 12) % 24 + 12 for x in utarr])
         midlt = (cha.midut + cha.midlon / 15) % 24
         # print(cha.midlon, cha.midut, midlt)
         yy, mm, dd = float(a[1]), float(a[2]), float(a[3])
         hh = np.median([float(x[4]) for x in datatemp])
         days = bf.orderday(str(int(yy)) + str(100 + int(mm))[1:3] + str(100 + int(dd))[1:3])
-        if midlt < 17 or midlt > 23:
+        if midlt < 17 or midlt > 24:
             cha.clear()
         if bf.isMagstorm(int(yy), int(days), int(hh), value):
             cha.clear()
@@ -132,7 +133,7 @@ def searchROC(data, state):
     if len(roc.data) > 0:
         datatemp = roc.data
         roc.midlon = np.median([float(x[6]) for x in datatemp])
-        roc.midut = np.median([float(x[0]) for x in datatemp])
+        roc.midut = np.median([(float(x[0]) - 12.0) % 24. + 12. for x in datatemp])
         midlt = (roc.midut + roc.midlon / 15) % 24
         if midlt < 0 or midlt > 24:
             roc.clear()
@@ -329,7 +330,7 @@ dltlist = []
 fout = open('a.txt', 'w+')
 if __name__ == '__main__':
     # fout = open('merged15_1.txt', 'w+')
-    for i in range(17, 23):
+    for i in range(23, 24):
         print(i)
         test(i * 1.)
         test(i + 0.5)
