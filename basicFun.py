@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
+from scipy.interpolate import interp1d
 
 def readfile(filename):
     f1 = open(filename, 'r')
@@ -63,6 +64,20 @@ def orderday(date):
     dd = datetime.datetime.strptime(date, "%Y%m%d")
     days = dd.timetuple().tm_yday
     return days
+
+
+def magline(maglat):  # input longitude output glat
+    f = open(str(maglat) + 'maglatline.txt', 'r')
+    # type of ns is bool,north=true
+    ml = f.readlines()
+    y = []
+    x = []
+    for i in range(len(ml)):
+        a = ml[i].split()
+        y.append(float(a[0]))
+        x.append(float(a[1]))
+    z = interp1d(x, y, kind='cubic')
+    return z
 
 if __name__ == '__main__':
     # mse = magstormexcle()
