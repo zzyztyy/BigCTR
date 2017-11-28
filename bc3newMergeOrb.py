@@ -228,7 +228,8 @@ def staticLT(LT, date):
                     roclist.append(roc)
                     # roc.latden()
             # draw
-            staticdraw(chalist, roclist, LT)
+            # staticdraw(chalist, roclist, LT)
+            staticwrite(chalist, roclist, LT)
         else:
             num = num + 1
 
@@ -243,6 +244,17 @@ def staticdraw(chalist, roclist, LT):
     for i in range(len(roclist)):
         roc = roclist[i]
         draw(cha.data, roc.data, LT)
+
+
+def staticwrite(chalist, roclist, LT):
+    roc = Orb()
+    for i in range(len(chalist)):
+        cha = chalist[i]
+        cha.outtext()
+    cha = Orb()
+    for i in range(len(roclist)):
+        roc = roclist[i]
+        roc.outtext()
 
 
 def draw(chadata, rocdata, lt):
@@ -288,8 +300,8 @@ def draw(chadata, rocdata, lt):
 
 
 def test(loctime):
-    plt.figure(figsize=[10, 10], dpi=300)
-    plt.subplots_adjust(hspace=0.1, left=0.1, bottom=0.05, right=0.97, top=0.97)
+    # plt.figure(figsize=[10, 10], dpi=300)
+    # plt.subplots_adjust(hspace=0.1, left=0.1, bottom=0.05, right=0.97, top=0.97)
     for year in range(2001, 2005):
         for month in range(1, 13):
             for day in range(1, 32):
@@ -299,10 +311,10 @@ def test(loctime):
                     staticLT(loctime + 0.25, date)
                 except:
                     print('error!'+str(date))
-    plt.subplot(3, 1, 1)
-    plt.title(str(loctime) + 'LT')
-    plt.savefig(str(loctime) + '.png')
-    plt.close()
+                    # plt.subplot(3, 1, 1)
+                    # plt.title(str(loctime) + 'LT')
+                    # plt.savefig(str(loctime) + '.png')
+                    # plt.close()
 
 
 zn = bf.magline(50)
@@ -311,12 +323,16 @@ z0 = bf.magline(0)
 
 dlonlsit = []
 dltlist = []
-fout = open('a.txt', 'w+')
+# fout = open('a.txt', 'w+')
 if __name__ == '__main__':
     # fout = open('merged15_1.txt', 'w+')
-    for i in range(23, 24):
+    for i in range(17, 24):
         print(i)
+        fout = open('D:\\program\\BigCTR\\LTdevelop\\' + str(i * 1.0) + '.txt', 'w+')
         test(i * 1.)
+        fout.close()
+        fout = open('D:\\program\\BigCTR\\LTdevelop\\' + str(i + 0.5) + '.txt', 'w+')
         test(i + 0.5)
+        fout.close()
         # fout.close()
         # print(len(dlonlsit))

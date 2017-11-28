@@ -8,4 +8,4 @@ def test(date):
 
 
 if __name__ == '__main__':
-    test()
+    test(1)
