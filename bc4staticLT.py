@@ -57,9 +57,9 @@ def sort_month_lon(season, location, fin, LT, path):
     while startline < len(fin):
         cha, nextline = getoneOrb(fin, startline)
         month = cha.date[4:6]
-        # year = cha.date[:4]
+        year = cha.date[:4]
         lon = cha.midlon % 360
-        chose = (month in monrange) * (abs(lon - loc) < 45.)
+        chose = (month in monrange) * (abs(lon - loc) < 45.) * (year in ['2003', '2004'])
         if chose:
             temp = temp + 1
             if cha.name == 'ROCSAT':
@@ -69,7 +69,7 @@ def sort_month_lon(season, location, fin, LT, path):
             else:
                 print(cha.name)
         startline = nextline
-    print(temp)
+    # print(temp)
     staticdraw(chalist, roclist, LT)
     plt.savefig(path + 'LT=' + str(LT) + season + location + '.png')
     plt.close()
@@ -78,7 +78,8 @@ def sort_month_lon(season, location, fin, LT, path):
 def test(LT):
     print(LT)
     path = 'D:\\program\\BigCTR\\LTdevelop\\'
-    fin = bf.readfile(path + format(LT * 1.0, '.1f') + '.txt') + bf.readfile(path + format(LT - 0.5, '.1f') + '.txt')
+    fin = bf.readfile(path + 'text\\' + format(LT * 1.0, '.1f') + '.txt') \
+          + bf.readfile(path + 'text\\' + format(LT - 0.5, '.1f') + '.txt')
     # lenfin = len(fin)
     for i in range(3):
         for j in range(4):

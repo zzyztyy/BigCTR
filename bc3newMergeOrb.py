@@ -246,13 +246,26 @@ def staticdraw(chalist, roclist, LT):
     plt.subplot(3, 1, 2)
     plt.plot(range(-30, 30), np.zeros(60), linestyle='--', c='r')
     roc = Orb()
+    ftemp = 0
+    dtemp = 0
+    btemp = 0
+    ntemp = 0
     for i in range(len(chalist)):
         cha = chalist[i]
-        draw(cha.data, roc.data, LT)
+        ck = draw(cha.data, roc.data, LT)
+        if ck == 'flat':
+            ftemp = ftemp + 1
+        elif ck == 'deep':
+            dtemp = dtemp + 1
+        elif ck == 'bubble':
+            btemp = btemp + 1
+        else:
+            ntemp = ntemp + 1
     cha = Orb()
     for i in range(len(roclist)):
         roc = roclist[i]
         draw(cha.data, roc.data, LT)
+    print(ftemp, dtemp, btemp, ntemp)
 
 
 def staticwrite(chalist, roclist, LT):
@@ -265,6 +278,47 @@ def staticwrite(chalist, roclist, LT):
         roc = roclist[i]
         roc.outtext()
 
+
+def curveKind(lat, den):
+    N = len(lat)
+    gettemp = []
+    getct = []
+    for i in range(1, N - 1):
+        if lat[i] > -25. and lat[i] < 22.:
+            if (den[i - 1] - den[i]) * (den[i] - den[i + 1]) <= 0.0:
+                if len(gettemp) > 0:
+                    if gettemp[len(gettemp) - 1] == i - 1:
+                        gettemp[len(gettemp) - 1] = i
+                    else:
+                        gettemp.append(i)
+                        if den[i - 1] < den[i]:
+                            getct.append(1)
+                        else:
+                            getct.append(0)
+                else:
+                    gettemp.append(i)
+                    if den[i - 1] < den[i]:
+                        getct.append(1)
+                    else:
+                        getct.append(0)
+    # print(getct)
+    # for i in range(len(getct)):
+    #     print(lat[gettemp[i]])
+    if len(getct) == 0:
+        return 'flat'
+    if len(getct) == 1:
+        if getct[0] == 1:
+            return 'flat'
+    if len(getct) == 3:
+        if getct == [1, 0, 1]:
+            ctr = (10. ** den[gettemp[0]] + 10. ** den[gettemp[2]]) / (10. ** den[gettemp[1]] * 2)
+            if ctr < 10.:
+                return 'flat'
+            else:
+                return 'deep'
+    if len(getct) - np.sum(getct) > 2:
+        return 'bubble'
+    return 'nosort'
 
 def draw(chadata, rocdata, lt):
     den = []
@@ -304,8 +358,22 @@ def draw(chadata, rocdata, lt):
     plt.xlim(-20, 20)
     plt.ylim(-75, 75)
     plt.subplot(3, 1, 3)
-    plt.plot(lat, den, linewidth=1, c='k', alpha=0.5)
+
+    ck = curveKind(lat, den)
+    # plt.plot(lat, 10**np.array(den), linewidth=1, c='k', alpha=1)
+    # plt.xlim(-20, 20)
+    # plt.show()
+
+    if ck == 'flat':
+        plt.plot(lat, den, linewidth=1, c='r', alpha=0.5)
+    elif ck == 'deep':
+        plt.plot(lat, den, linewidth=1, c='g', alpha=0.5)
+    elif ck == 'bubble':
+        plt.plot(lat, den, linewidth=1, c='b', alpha=0.5)
+    else:
+        plt.plot(lat, den, linewidth=1, c='y', alpha=0.5)
     plt.axis([-20, 20, 3.5, 7])
+    return ck
 
 
 def test(loctime):

@@ -103,7 +103,37 @@ def toobig():
             den.clear()
     plt.legend(lon)
 
+
+def fillblog():
+    text = open('sortnum.txt', 'r').readlines()
+    # data=[[0]*3]*4
+    # amax = 50
+    for i in range(6):
+        LT = text[i * 13][:2]
+        print(LT)
+        plt.figure(figsize=[4.0, 10.0])
+        for j in range(12):
+            a = text[i * 13 + j + 1].split()
+            r, g, b, y = int(a[0]), int(a[1]), int(a[2]), int(a[3])
+            amax = max(r, g, b)
+            plt.subplot(3, 1, 1)
+            plt.scatter(j % 4, int(j / 4), c=[r / amax, 0, 0], s=2000, marker='s')
+            plt.ylim(-0.6, 2.6)
+            plt.subplot(3, 1, 2)
+            plt.scatter(j % 4, int(j / 4), c=[0, g / amax, 0], s=2000, marker='s')
+            plt.ylim(-0.6, 2.6)
+            plt.subplot(3, 1, 3)
+            plt.scatter(j % 4, int(j / 4), c=[0, 0, b / amax], s=2000, marker='s')
+            plt.ylim(-0.6, 2.6)
+        plt.xticks(range(4), location)
+        plt.yticks(range(3), season)
+        plt.ylim(-0.6, 2.6)
+        # plt.title(LT)
+        plt.savefig(LT + '.png')
+        # plt.show()
+
+
+season = ['sum', 'spr', 'win']
+location = ['Eur', 'Asi', 'Pac', 'Ame']
 if __name__ == '__main__':
-    toobig()
-    plt.ylim(2, 7)
-    plt.show()
+    fillblog()
