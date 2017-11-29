@@ -12,6 +12,8 @@ class Orb(object):
         self.data = []
         self.midlon = 0.
         self.midut = 0.
+        self.midlt = 0.
+        self.date = '00000000'
     def insert(self, a):
         self.data.append(a)
     def latden(self):
@@ -34,7 +36,8 @@ class Orb(object):
     def clear(self):
         self.data.clear()
     def outtext(self):
-        fout.write(self.name+' '+str(self.lenth)+' '+format(self.midlon, '.2f')+' '+format(self.midut, '.2f')+'\n')
+        fout.write(self.name + ' ' + str(self.lenth) + ' ' + self.date + ' ' + format(self.midlon, '.2f') + ' '
+                   + format(self.midut, '.2f') + ' ' + format(self.midlt, '.2f') + '\n')
         if self.name == 'CHAMP':
             fout.write('GPS yy mm dd hh mm ss radius lat lon den (Temperature)\n')
         elif self.name == 'ROCSAT':
@@ -88,13 +91,15 @@ def searchCHA(data, state):
         datatemp = cha.data
         cha.midlon = np.median([float(x[9]) for x in datatemp])
         utarr = [float(x[4]) + float(x[5]) / 60 + float(x[6]) / 3600 for x in datatemp]
-        cha.midut = np.median([(x - 12) % 24 + 12 for x in utarr])
-        midlt = (cha.midut + cha.midlon / 15) % 24
+        # cha.midut = np.median([x for x in utarr]) % 24
+        cha.midut = np.median([(x - 12) % 24 + 12 for x in utarr]) % 24
+        cha.midlt = (cha.midut + cha.midlon / 15) % 24
+
         # print(cha.midlon, cha.midut, midlt)
         yy, mm, dd = float(a[1]), float(a[2]), float(a[3])
         hh = np.median([float(x[4]) for x in datatemp])
         days = bf.orderday(str(int(yy)) + str(100 + int(mm))[1:3] + str(100 + int(dd))[1:3])
-        if midlt < 17 or midlt > 24:
+        if cha.midlt < 17 or cha.midlt > 24:
             cha.clear()
         if bf.isMagstorm(int(yy), int(days), int(hh), value):
             cha.clear()
@@ -131,9 +136,10 @@ def searchROC(data, state):
     if len(roc.data) > 0:
         datatemp = roc.data
         roc.midlon = np.median([float(x[6]) for x in datatemp])
-        roc.midut = np.median([(float(x[0]) - 12.0) % 24. + 12. for x in datatemp])
-        midlt = (roc.midut + roc.midlon / 15) % 24
-        if midlt < 0 or midlt > 24:
+        # roc.midut = np.median([float(x[0]) for x in datatemp])
+        roc.midut = np.median([(float(x[0]) - 12.0) % 24. + 12. for x in datatemp]) % 24
+        roc.midlt = (roc.midut + roc.midlon / 15) % 24
+        if roc.midlt < 17 or roc.midlt > 24:
             roc.clear()
     roc.lenth = len(roc.data)
     return roc, state+15
@@ -216,6 +222,7 @@ def staticLT(LT, date):
             state = 18
             while state < len(datacha) - 1:
                 cha, state = searchCHA(datacha, state)
+                cha.date = date
                 # print((cha.midut+cha.midlon/15.) % 24)
                 if cha.lenth != 0 and abs((cha.midut + cha.midlon / 15.) % 24 - LT) < 0.25:
                     chalist.append(cha)
@@ -224,6 +231,7 @@ def staticLT(LT, date):
             state = 2
             while state < len(dataroc) - 1:
                 roc, state = searchROC(dataroc, state)
+                roc.date = date
                 if roc.lenth > 0 and abs((roc.midut + roc.midlon / 15.) % 24 - LT) < 0.25:
                     roclist.append(roc)
                     # roc.latden()
@@ -236,6 +244,7 @@ def staticLT(LT, date):
 
 def staticdraw(chalist, roclist, LT):
     plt.subplot(3, 1, 2)
+    plt.plot(range(-30, 30), np.zeros(60), linestyle='--', c='r')
     roc = Orb()
     for i in range(len(chalist)):
         cha = chalist[i]
@@ -287,15 +296,15 @@ def draw(chadata, rocdata, lt):
     # if len(lgN)
     # lgN2 = bf.smooth(lgN, 10)
     plt.subplot(3, 1, 1)
-    plt.plot(latr, lgN, linewidth=1, c='k', alpha=0.2)
+    plt.plot(latr, lgN, linewidth=1, c='k', alpha=0.5)
     plt.xlim(-20, 20)
-    plt.ylim(4.5, 6.5)
+    plt.ylim(3.5, 7)
     plt.subplot(3, 1, 2)
-    plt.plot(latr, Vpm2, linewidth=1, c='k', alpha=0.2)
+    plt.plot(latr, Vpm2, linewidth=1, c='k', alpha=0.5)
     plt.xlim(-20, 20)
     plt.ylim(-75, 75)
     plt.subplot(3, 1, 3)
-    plt.plot(lat, den, linewidth=1, c='k', alpha=0.2)
+    plt.plot(lat, den, linewidth=1, c='k', alpha=0.5)
     plt.axis([-20, 20, 3.5, 7])
 
 
