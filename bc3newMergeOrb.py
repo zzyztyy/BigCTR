@@ -329,7 +329,7 @@ def curveKind2(lat, den):
     else:
         den2 = den
     sigma = abs(den2 - den) / den2
-    if sigma.max() > 0.1:
+    if sigma.max() > 0.05:
         return 'bubble'
 
     norpeak = []
@@ -347,7 +347,7 @@ def curveKind2(lat, den):
         ctr = (np.array(soupeak).max() + np.array(norpeak).max()) / (2 * np.array(valley).min())
     else:
         return 'nosort'
-    if ctr > 10.:
+    if ctr > 5.:
         return 'deep'
     else:
         return 'flat'
