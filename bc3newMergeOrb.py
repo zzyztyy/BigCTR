@@ -320,6 +320,38 @@ def curveKind(lat, den):
         return 'bubble'
     return 'nosort'
 
+
+def curveKind2(lat, den):
+    N = len(lat)
+    den = np.array(den)
+    if len(den) > 5:
+        den2 = bf.smooth(den, 5)
+    else:
+        den2 = den
+    sigma = abs(den2 - den) / den2
+    if sigma.max() > 0.1:
+        return 'bubble'
+
+    norpeak = []
+    soupeak = []
+    valley = []
+    for i in range(N):
+        alat = lat[i]
+        if alat < -10 and alat > -20:
+            soupeak.append(10 ** den[i])
+        elif alat < 5 and alat > -5:
+            valley.append(10 ** den[i])
+        elif alat > 10 and alat < 20:
+            norpeak.append(10 ** den[i])
+    if len(soupeak) * len(norpeak) * len(valley) != 0:
+        ctr = (np.array(soupeak).max() + np.array(norpeak).max()) / (2 * np.array(valley).min())
+    else:
+        return 'nosort'
+    if ctr > 10.:
+        return 'deep'
+    else:
+        return 'flat'
+
 def draw(chadata, rocdata, lt):
     den = []
     lat = []
@@ -358,21 +390,21 @@ def draw(chadata, rocdata, lt):
     plt.xlim(-20, 20)
     plt.ylim(-75, 75)
     plt.subplot(3, 1, 3)
-
-    ck = curveKind(lat, den)
+    ck = 'nosort'
+    if len(lat) > 5:
+        ck = curveKind2(lat, den)
     # plt.plot(lat, 10**np.array(den), linewidth=1, c='k', alpha=1)
     # plt.xlim(-20, 20)
     # plt.show()
-
-    if ck == 'flat':
-        plt.plot(lat, den, linewidth=1, c='r', alpha=0.5)
-    elif ck == 'deep':
-        plt.plot(lat, den, linewidth=1, c='g', alpha=0.5)
-    elif ck == 'bubble':
-        plt.plot(lat, den, linewidth=1, c='b', alpha=0.5)
-    else:
-        plt.plot(lat, den, linewidth=1, c='y', alpha=0.5)
-    plt.axis([-20, 20, 3.5, 7])
+        if ck == 'flat':
+            plt.plot(lat, den, linewidth=1, c='r', alpha=0.5)
+        elif ck == 'deep':
+            plt.plot(lat, den, linewidth=1, c='g', alpha=0.5)
+        elif ck == 'bubble':
+            plt.plot(lat, den, linewidth=1, c='b', alpha=0.5)
+        else:
+            plt.plot(lat, den, linewidth=1, c='y', alpha=0.5)
+        plt.axis([-20, 20, 3.5, 7])
     return ck
 
 

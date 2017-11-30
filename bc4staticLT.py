@@ -71,7 +71,7 @@ def sort_month_lon(season, location, fin, LT, path):
         startline = nextline
     # print(temp)
     staticdraw(chalist, roclist, LT)
-    plt.savefig(path + 'LT=' + str(LT) + season + location + '.png')
+    plt.savefig(path + 'picture\\sort6\\' + 'LT=' + str(LT) + season + location + '.png')
     plt.close()
 
 
