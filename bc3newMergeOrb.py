@@ -5,6 +5,8 @@ import numpy as np
 import basicFun as bf
 
 # ut0 lt1 Vpm2 lgN3 Diplat4 glat5 glon6
+
+
 class Orb(object):
     def __init__(self):
         self.name = 'not define'
@@ -89,7 +91,9 @@ def searchCHA(data, state):
     #获取参量
     if len(cha.data)>0:
         datatemp = cha.data
-        cha.midlon = np.median([float(x[9]) for x in datatemp])
+        cha.midlon = np.median([float(x[9]) % 360. for x in datatemp])
+        if cha.midlon < 30 or cha.midlon > 330:
+            cha.midlon = np.median([((float(x[9]) - 180) % 360) + 180 for x in datatemp]) % 360
         utarr = [float(x[4]) + float(x[5]) / 60 + float(x[6]) / 3600 for x in datatemp]
         # cha.midut = np.median([x for x in utarr]) % 24
         cha.midut = np.median([(x - 12) % 24 + 12 for x in utarr]) % 24
@@ -135,7 +139,9 @@ def searchROC(data, state):
         diplat = b[4]
     if len(roc.data) > 0:
         datatemp = roc.data
-        roc.midlon = np.median([float(x[6]) for x in datatemp])
+        roc.midlon = np.median([float(x[6]) % 360 for x in datatemp])
+        if roc.midlon < 30 or roc.midlon > 330:
+            roc.midlon = np.median([((float(x[6]) - 180) % 360) + 180 for x in datatemp]) % 360
         # roc.midut = np.median([float(x[0]) for x in datatemp])
         roc.midut = np.median([(float(x[0]) - 12.0) % 24. + 12. for x in datatemp]) % 24
         roc.midlt = (roc.midut + roc.midlon / 15) % 24
@@ -213,9 +219,9 @@ def staticLT(LT, date):
     while num <= 4:
         champname, rocname = datetran(date, num)
         champfilename = oschamp + champname
-        if os.path.exists(champfilename) and os.path.exists(osroc + rocname):
+        if os.path.exists(champfilename):  # and os.path.exists(osroc + rocname):
             datacha = bf.readfile(champfilename)
-            dataroc = bf.readfile(osroc + rocname)
+            # dataroc = bf.readfile(osroc + rocname)
             chalist = []
             roclist = []
             # CHAMP
@@ -228,12 +234,12 @@ def staticLT(LT, date):
                     chalist.append(cha)
             num = 5
             # ROCSAT
-            state = 2
-            while state < len(dataroc) - 1:
-                roc, state = searchROC(dataroc, state)
-                roc.date = date
-                if roc.lenth > 0 and abs((roc.midut + roc.midlon / 15.) % 24 - LT) < 0.25:
-                    roclist.append(roc)
+            # state = 2
+            # while state < len(dataroc) - 1:
+            #     roc, state = searchROC(dataroc, state)
+            #     roc.date = date
+            #     if roc.lenth > 0 and abs((roc.midut + roc.midlon / 15.) % 24 - LT) < 0.25:
+            #         roclist.append(roc)
                     # roc.latden()
             # draw
             # staticdraw(chalist, roclist, LT)
@@ -352,6 +358,7 @@ def curveKind2(lat, den):
     else:
         return 'flat'
 
+
 def draw(chadata, rocdata, lt):
     den = []
     lat = []
@@ -382,11 +389,11 @@ def draw(chadata, rocdata, lt):
     # if len(lgN)
     # lgN2 = bf.smooth(lgN, 10)
     plt.subplot(3, 1, 1)
-    plt.plot(latr, lgN, linewidth=1, c='k', alpha=0.5)
+    plt.plot(latr, lgN, linewidth=1, c='k', alpha=0.1)
     plt.xlim(-20, 20)
     plt.ylim(3.5, 7)
     plt.subplot(3, 1, 2)
-    plt.plot(latr, Vpm2, linewidth=1, c='k', alpha=0.5)
+    plt.plot(latr, Vpm2, linewidth=1, c='k', alpha=0.1)
     plt.xlim(-20, 20)
     plt.ylim(-75, 75)
     plt.subplot(3, 1, 3)
@@ -397,13 +404,13 @@ def draw(chadata, rocdata, lt):
     # plt.xlim(-20, 20)
     # plt.show()
         if ck == 'flat':
-            plt.plot(lat, den, linewidth=1, c='r', alpha=0.5)
+            plt.plot(lat, den, linewidth=1, c='r', alpha=0.1)
         elif ck == 'deep':
-            plt.plot(lat, den, linewidth=1, c='g', alpha=0.5)
+            plt.plot(lat, den, linewidth=1, c='g', alpha=0.1)
         elif ck == 'bubble':
-            plt.plot(lat, den, linewidth=1, c='b', alpha=0.5)
+            plt.plot(lat, den, linewidth=1, c='b', alpha=0.1)
         else:
-            plt.plot(lat, den, linewidth=1, c='y', alpha=0.5)
+            plt.plot(lat, den, linewidth=1, c='y', alpha=0.1)
         plt.axis([-20, 20, 3.5, 7])
     return ck
 
@@ -411,7 +418,7 @@ def draw(chadata, rocdata, lt):
 def test(loctime):
     # plt.figure(figsize=[10, 10], dpi=300)
     # plt.subplots_adjust(hspace=0.1, left=0.1, bottom=0.05, right=0.97, top=0.97)
-    for year in range(2001, 2005):
+    for year in range(2001, 2007):
         for month in range(1, 13):
             for day in range(1, 32):
                 date = str(year)+str(month+100)[1:3]+str(day+100)[1:3]

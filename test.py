@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import basicFun as bf
 
+
 def xiangtu():
     k = 1
     vy0 = np.arange(-10, 10, 2)
@@ -133,7 +134,24 @@ def fillblog():
         # plt.show()
 
 
+def bar_plot():
+    arr = [[1755, 27, 2],
+           [1388, 291, 77],
+           [1059, 295, 296],
+           [1009, 241, 417],
+           [1035, 192, 398],
+           [1206, 104, 328]]
+    arr = np.array(arr).transpose()
+    localtime = [18, 19, 20, 21, 22, 23]
+    p1 = plt.bar(localtime, arr[0] + arr[1] + arr[2], color='b', width=0.5)
+    p2 = plt.bar(localtime, arr[0] + arr[1], color='g', width=0.5)
+    p3 = plt.bar(localtime, arr[0], color='r', width=0.5)
+    plt.axis([17, 24, 800, 2000])
+    plt.legend(['Bubble', 'Deep', 'Flat'])
+    plt.show()
+
+
 season = ['sum', 'spr', 'win']
 location = ['Eur', 'Asi', 'Pac', 'Ame']
 if __name__ == '__main__':
-    fillblog()
+    bar_plot()

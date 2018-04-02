@@ -2,12 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 from scipy.interpolate import interp1d
+from scipy.interpolate import griddata
+import scipy.signal as signal
+
 
 def readfile(filename):
     f1 = open(filename, 'r')
     text = f1.readlines()
     f1.close()
     return text
+
 
 def readfilenomagstorm(filename, date, value):
     year = int(date[:4])
@@ -26,6 +30,7 @@ def readfilenomagstorm(filename, date, value):
             text2.append(text[i])
     return text2
 
+
 def sort2(l1, l2):#按l2大小为l1排序
     l3 = []
     for i in range(len(l1)):
@@ -36,19 +41,22 @@ def sort2(l1, l2):#按l2大小为l1排序
         l1[i] = c[i][0]
     return l1
 
+
 def magstormexcle():
-    value = np.array([[[False]*24]*366]*4)
-    for i in range(4):
-        dstkpdata = readfile('D:\\sattelite data\\mag_data\\'+str(2001+i)+'mag.txt')
+    value = np.array([[[False] * 24] * 366] * 12)
+    for i in range(12):
+        dstkpdata = readfile('D:\\sattelite data\\mag_data\\' + str(1999 + i) + 'mag.txt')
         for j in range(len(dstkpdata)):
             a = dstkpdata[j].split()
             if float(a[3]) >= 30 or float(a[4]) <= -30:
-                value[i][int(float(a[1]))][int(float(a[2]))] = True
+                value[i][int(float(a[1])) - 1][int(float(a[2]))] = True
     # print(value)
     return value
 
+
 def isMagstorm(year, day, hour, value):
-    return value[int(year-2001)][day][hour]
+    return value[int(year - 1999)][day][hour]
+
 
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
@@ -60,6 +68,7 @@ def smooth(y, box_pts):
     # print(y_smooth)
     return y_smooth
 
+
 def orderday(date):
     dd = datetime.datetime.strptime(date, "%Y%m%d")
     days = dd.timetuple().tm_yday
@@ -67,7 +76,7 @@ def orderday(date):
 
 
 def magline(maglat):  # input longitude output glat
-    f = open(str(maglat) + 'maglatline.txt', 'r')
+    f = open('maglatline\\' + str(maglat) + 'maglatline.txt', 'r')
     # type of ns is bool,north=true
     ml = f.readlines()
     y = []
@@ -78,6 +87,22 @@ def magline(maglat):  # input longitude output glat
         x.append(float(a[1]))
     z = interp1d(x, y, kind='cubic')
     return z
+
+
+def drawcountourf(xl, yl, zl):
+    # n = 256
+    # x = np.linspace(-3, 3, n)
+    # y = np.linspace(-3, 3, n)
+    xg, yg = np.mgrid[-180: 180:12j, 0:390:12j]
+    vg = griddata((xl, yl), zl, (xg, yg), method='linear')
+    plt.contourf(xg, yg, vg, 10, cmap='jet', vmax=1, vmin=0)
+    # plt.axis([-180, 180, 0, 366])
+    plt.colorbar()
+    plt.ylabel('DOY')
+    plt.xlabel('glon')
+    plt.title('Big CTR distribution')
+    plt.show()
+
 
 if __name__ == '__main__':
     # mse = magstormexcle()
