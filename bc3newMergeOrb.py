@@ -16,8 +16,10 @@ class Orb(object):
         self.midut = 0.
         self.midlt = 0.
         self.date = '00000000'
+
     def insert(self, a):
         self.data.append(a)
+
     def latden(self):
         xtemp = 0
         ytemp = 0
@@ -35,8 +37,26 @@ class Orb(object):
         den = [float(x[ytemp]) for x in alldata]
         plt.plot(lat, den)
         plt.show()
+
+    def mlat_den(self):  # 仅限axx.x.txt类文件使用
+        xtemp = 0
+        ytemp = 0
+        alldata = self.data
+        if self.name == 'CHAMP':
+            xtemp = 10
+            ytemp = 12
+            # alldata = [x.split() for x in alldata]
+        else:
+            print('Error')
+        mlat = [float(x[xtemp]) for x in alldata]
+        den = [np.log10(float(x[ytemp])) for x in alldata]
+        # plt.plot(mlat, den)
+        # plt.show()
+        return mlat, den
+
     def clear(self):
         self.data.clear()
+
     def outtext(self):
         fout.write(self.name + ' ' + str(self.lenth) + ' ' + self.date + ' ' + format(self.midlon, '.2f') + ' '
                    + format(self.midut, '.2f') + ' ' + format(self.midlt, '.2f') + '\n')
