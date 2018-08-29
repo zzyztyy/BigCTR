@@ -45,7 +45,7 @@ def sort2(l1, l2):#按l2大小为l1排序
 def magstormexcle():
     value = np.array([[[False] * 24] * 366] * 12)
     for i in range(12):
-        dstkpdata = readfile('D:\\sattelite data\\mag_data\\' + str(1999 + i) + 'mag.txt')
+        dstkpdata = readfile('D:\\SatteliteData\\mag_data\\' + str(1999 + i) + 'mag.txt')
         for j in range(len(dstkpdata)):
             a = dstkpdata[j].split()
             if float(a[3]) >= 30 or float(a[4]) <= -30:
@@ -73,6 +73,12 @@ def orderday(date):
     dd = datetime.datetime.strptime(date, "%Y%m%d")
     days = dd.timetuple().tm_yday
     return days
+
+
+def julday(date):
+    dd = datetime.datetime.strptime(date, "%Y%m%d")
+    deltaDay = (datetime.date(dd.year, dd.month, dd.day) - datetime.date(2001, 1, 1))
+    return deltaDay.days
 
 
 def magline(maglat):  # input longitude output glat

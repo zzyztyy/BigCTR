@@ -59,7 +59,7 @@ def sort_month_lon(season, location, fin, LT, path):
         year = cha.date[:4]
         lon = cha.midlon % 360
         dloc = min(abs(lon - loc), abs(lon - loc + 360), abs(lon - loc - 360))
-        chose = True  # (month in monrange) * (dloc < 45.) * (year in ['2001', '2002'])
+        chose = (year in ['2001'])  # (month in monrange) * (dloc < 45.) * (year in ['2001', '2002'])
         if chose:
             temp = temp + 1
             if cha.name == 'ROCSAT':
@@ -101,12 +101,12 @@ def static_season_lon(chalist, LT):
             bubble.append([lon, month, doy])
         else:
             nosort.append([lon, month, doy])
-    # plt.scatter([x[0] for x in flat], [x[1] for x in flat], c='r', s=3)
-    # plt.scatter([x[0] for x in deep], [x[1] for x in deep], c='g', s=3)
-    # plt.scatter([x[0] for x in bubble], [x[1] for x in bubble], c='b', s=3)
+    plt.scatter([x[0] for x in flat], [x[2] for x in flat], c='r', s=3)
+    plt.scatter([x[0] for x in deep], [x[2] for x in deep], c='g', s=3)
+    plt.scatter([x[0] for x in bubble], [x[2] for x in bubble], c='b', s=3)
     # plt.scatter([x[0] for x in nosort], [x[1] for x in nosort], c='k', s=3)
-    static_draw(flat, deep, bubble, nosort)
-    print(len(flat), len(deep), len(bubble), len(nosort))
+    # static_draw(flat, deep, bubble, nosort)
+    # print(len(flat), len(deep), len(bubble), len(nosort))
     # preDrawContourf(flat, deep, bubble, nosort)
 
 
@@ -194,7 +194,7 @@ def test(LT):
             # plt.axis([0, 366, 0, 360])
             # plt.savefig(str(LT)+'.png')
             # plt.close()
-            # plt.show()
+            plt.show()
 
 
 z0 = bf.magline(0)
