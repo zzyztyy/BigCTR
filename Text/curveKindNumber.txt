@@ -1,0 +1,6 @@
+18 {'flat': 1759, 'deep': 28, 'bubble': 0, 'error': 10}
+19 {'flat': 1383, 'deep': 329, 'bubble': 58, 'error': 5}
+20 {'flat': 1074, 'deep': 379, 'bubble': 196, 'error': 3}
+21 {'flat': 1071, 'deep': 331, 'bubble': 265, 'error': 4}
+22 {'flat': 1129, 'deep': 252, 'bubble': 238, 'error': 3}
+23 {'flat': 1295, 'deep': 175, 'bubble': 163, 'error': 0}
