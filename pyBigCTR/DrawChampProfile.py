@@ -10,11 +10,12 @@ def read_file(lt, what):
     # text = open('D:/Program/BigCTR/Text/text_onlyChamp/a' + str(lt * 1.0 - 0.5) + '.txt').readlines() + \
     text = open('D:/Program/BigCTR/Text/champOrb/' + str(lt * 1.0) + '.txt').readlines()
     temp_line = 0
-    # num_ck = {'flat': 0, 'deep': 0, 'bubble': 0, 'error': 0}
+    num_ck = {'flat': [0] * 50, 'deep': [0] * 50, 'bubble': [0] * 50, 'error': [0] * 50}
     ctrs = []
     while temp_line < len(text):
         cha, temp_line = get_one_orb(text, temp_line)
-        # print(temp_line)
+        print(temp_line)
+        print(cha.date)
         if what == 2:
             if cha.ctr != 0 and cha.ctr != -2:
                 if cha.ctr == -1:
@@ -23,9 +24,14 @@ def read_file(lt, what):
                     ctrs.append(cha.ctr)
         elif what == 1:
             draw2(cha)
-        # static_lct(cha, num_ck)
+        elif what == 3:
+            mlat, den = cha.mlat_den()
+            if len(mlat) > 50:
+                static_lct(mlat, den, num_ck)
     if what == 2:
         return ctrs
+    elif what == 3:
+        return num_ck
 
 
 def draw(cha):
@@ -114,10 +120,11 @@ def draw2(cha):
 
 def static_lct(mlat, den, num_ck):
     den = np.array(den)
-    # den_d2 = den[:-2] + den[2:] - 2 * den[1:-1]
-    # den_rp, den_d2_rp, step = repair_bubble(den, den_d2)
-    ck = get_curve_kind(mlat, den)
-    num_ck[ck] += 1
+    den_d2 = den[:-2] + den[2:] - 2 * den[1:-1]
+    den_rp, den_d2_rp, step = repair_bubble(den, den_d2)
+    ck, ctr = get_curve_kind(mlat, den)
+    print(ck, step)
+    num_ck[ck][step] += 1
 
 
 def draw_profile():
@@ -167,4 +174,13 @@ def static_ctr():
 
 
 if __name__ == '__main__':
-    static_ctr()
+    for lct in range(18, 24):
+        res = read_file(lct, 3)
+        print(lct)
+        plt.plot(res['flat'])
+        plt.plot(np.array(res['bubble']) + np.array(res['deep']) + np.array(res['flat']))
+        plt.plot(np.array(res['deep']) + np.array(res['flat']))
+        plt.axis([0, 50, 0, 50])
+        # print(key.ljust(7), ' '.join([str(x).rjust(3) for x in res[key]]))
+        plt.savefig('D:/Program/BigCTR/Picture/localtime_ck_num/' + str(lct) + '.jpg')
+        plt.close()

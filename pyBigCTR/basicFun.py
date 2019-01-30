@@ -104,7 +104,7 @@ def get_one_orb(text, startline):
 def repair_bubble(den, den_d2):
     step = 0
     den1 = den.copy()
-    while max(abs(den_d2)) > 0.2 and step < 20:
+    while max(abs(den_d2)) > 0.2 and step < 49:
         ind = np.argmax(abs(den_d2))
         den1[ind + 1] = 0.5 * (den1[ind] + den1[ind + 2])
         den_d2 = den1[:-2] + den1[2:] - 2 * den1[1:-1]
@@ -158,24 +158,6 @@ def get_curve_kind(mlat, den):
 
     if vally_value >= north_peak_value or vally_value >= south_peak_value:
         return 'flat', 1
-
-    # if step <= 5:
-    #     ctr = (10**north_peak_value + 10**south_peak_value)/(2*10**vally_value)
-    # else:
-    # n_indexs = [max(north_peak_index-1, 0), north_peak_index, min(north_peak_index+1, len(mlat)-1)]
-    # v_indexs = [max(vally_index-1, 0), vally_index, min(vally_index+1, len(mlat)-1)]
-    # s_indexs = [max(south_peak_index-1, 0), south_peak_index, min(south_peak_index+1, len(mlat)-1)]
-    # peak_value = []
-    # if [den[x] for x in n_indexs] == [den_rp[x] for x in n_indexs]:
-    #     peak_value.append(10**north_peak_value)
-    # if [den[x] for x in s_indexs] == [den_rp[x] for x in s_indexs]:
-    #     peak_value.append(10**south_peak_value)
-    # if len(peak_value) > 0 and [den[x] for x in v_indexs] == [den_rp[x] for x in v_indexs]:
-    #     print(peak_value, 10**vally_value)
-
-    # ctr = np.mean([])/(10**vally_value)
-    # else:
-    #     return 'bubble'
 
     ctr = (10 ** north_peak_value + 10 ** south_peak_value) / (2 * 10 ** vally_value)
     # print(ctr)
