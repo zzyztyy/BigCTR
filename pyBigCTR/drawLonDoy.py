@@ -2,18 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 
-from bc3newMergeOrb import Orb
-from bc4staticLT import getoneOrb
 import basicFun as bf
 from DrawChampProfile import get_curve_kind
 
 
-def getOrbitList(fin, ):
+def getOrbitList(fin):
     startline = 0
     chalist = []
     temp = 0
     while startline < len(fin):
-        cha, nextline = getoneOrb(fin, startline)
+        cha, nextline = bf.get_one_orb(fin, startline)
         year = cha.date[:4]
         chose = True  # (year in ['2002'])
         if chose:
@@ -23,7 +21,8 @@ def getOrbitList(fin, ):
             else:
                 print(cha.name)
         startline = nextline
-    static_season_lon(chalist)
+    return chalist
+    # return static_season_lon(chalist)
 
 
 def static_season_lon(chalist):
@@ -57,6 +56,7 @@ def static_season_lon(chalist):
     plt.scatter([x[0] for x in deep], [x[2] for x in deep], c=[float(x[3]) for x in deep], cmap='rainbow_r', marker='s')
     plt.colorbar()
     plt.scatter([x[0] for x in bubble], [x[2] for x in bubble], c='b', marker='x')
+
     # plt.scatter([x[0] for x in nosort], [x[2] for x in nosort], c='k', s=3, marker='p')
     # static_draw(flat, deep, bubble, nosort)
     # print(len(flat), len(deep), len(bubble), len(nosort))
@@ -95,6 +95,40 @@ def curveKindAndCtr(lat, den):
         return 'flat', ctr
 
 
+def output_champ_ck():
+    res = {}
+
+    path = 'D:/Program/BigCTR/Text/champOrb/'
+    fin = []
+    for i in range(19, 24):
+        fin = fin + bf.readfile(path + format(i * 1.0, '.1f') + '.txt')
+
+    res = set()
+    chalist = getOrbitList(fin)
+    for i in range(len(chalist)):
+        cha = chalist[i]
+        mlat0, den0 = cha.mlat_den()
+        mlat, den = [], []
+        for i in range(len(mlat0)):
+            if -27 < mlat0[i] < 27:
+                den.append(den0[i])
+                mlat.append(mlat0[i])
+        if len(mlat) > 35:
+            res.add(cha.date)
+            # ck, ctr = get_curve_kind(mlat, den)
+            # doy = bf.orderday(cha.date)
+            # k = cha.date[:4]+str(doy).zfill(3)
+            # if k not in res:
+            #     res[k] = []
+            # res[k].append([ck, str(round(ctr, 3)), str(cha.midlon)])
+    print(sorted(res))
+    # with open('champ_ck.txt', 'w+') as f:
+    #     for k in res.keys():
+    #         print(k)
+    #         for s in res[k]:
+    #             f.write(k + ' ' + ' '.join(s)+'\n')
+
+
 def test():
     path = 'D:/Program/BigCTR/Text/champOrb/'
     fin = []
@@ -120,4 +154,4 @@ def test():
 
 z0 = bf.magline(0)
 if __name__ == '__main__':
-    test()
+    output_champ_ck()
