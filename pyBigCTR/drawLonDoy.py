@@ -100,10 +100,10 @@ def output_champ_ck():
 
     path = 'D:/Program/BigCTR/Text/champOrb/'
     fin = []
-    for i in range(19, 24):
+    for i in range(18, 24):
         fin = fin + bf.readfile(path + format(i * 1.0, '.1f') + '.txt')
 
-    res = set()
+    # res = set()
     chalist = getOrbitList(fin)
     for i in range(len(chalist)):
         cha = chalist[i]
@@ -114,19 +114,19 @@ def output_champ_ck():
                 den.append(den0[i])
                 mlat.append(mlat0[i])
         if len(mlat) > 35:
-            res.add(cha.date)
-            # ck, ctr = get_curve_kind(mlat, den)
-            # doy = bf.orderday(cha.date)
-            # k = cha.date[:4]+str(doy).zfill(3)
-            # if k not in res:
-            #     res[k] = []
-            # res[k].append([ck, str(round(ctr, 3)), str(cha.midlon)])
-    print(sorted(res))
-    # with open('champ_ck.txt', 'w+') as f:
-    #     for k in res.keys():
-    #         print(k)
-    #         for s in res[k]:
-    #             f.write(k + ' ' + ' '.join(s)+'\n')
+            # res.add(cha.date)
+            ck, ctr = get_curve_kind(mlat, den)
+            doy = bf.orderday(cha.date)
+            k = cha.date[:4] + str(doy).zfill(3)
+            if k not in res:
+                res[k] = []
+            res[k].append([ck, str(round(ctr, 3)), str(cha.midlon), str(round(cha.midlt, 2))])
+    # print(sorted(res))
+    with open('champ_ck.txt', 'w+') as f:
+        for k in res.keys():
+            print(k)
+            for s in res[k]:
+                f.write(k + ' ' + ' '.join(s) + '\n')
 
 
 def test():
@@ -152,6 +152,50 @@ def test():
     # plt.show()
 
 
+def draw_kind_time():
+    num_type = {'flat': 0, 'deep': 1, 'bubble': 2}
+    res = {2001: {}, 2002: {}, 2003: {}, 2004: {}}
+    with open('D:/Program/BigCTR/Text/fourPic/champ_ck.txt', 'r') as f:
+        texts = f.readlines()
+        for text in texts:
+            a = text.split()
+            year = int(a[0][:4])
+            doy = int(a[0][4:])
+            type = a[1]
+            if doy not in res[year]:
+                # flat deep bubble
+                res[year][doy] = [0, 0, 0]
+            if type != 'error':
+                res[year][doy][num_type[type]] += 1
+    width = 1
+    plt.figure(figsize=[8, 6], dpi=150)
+    plt.subplot(4, 1, 1)
+    plt.title('Numbers of Samples in Different Days')
+    for year in [2001, 2002, 2003, 2004]:
+        plt.subplot(4, 1, year - 2000)
+        plt.subplots_adjust(left=0.05, bottom=0.05, right=0.98, top=0.95, hspace=0)
+        # plt.plot(range(0, 366), 0*(2004-year)*np.ones(366), c='k')
+        x = res[year].keys()
+        f = np.array([res[year][z][0] for z in x])
+        d = np.array([res[year][z][1] for z in x])
+        b = np.array([res[year][z][2] for z in x])
+        p1 = plt.bar(x, f, bottom=0, color='g', width=width)
+        p2 = plt.bar(x, d, bottom=f, color='r', width=width)
+        p3 = plt.bar(x, b, bottom=f + d, color='b', width=width)
+        plt.text(330, 20, year, size=16)
+        if year == 2001:
+            plt.legend([p1, p2, p3], ['Flat', 'Deep', 'Bubble'], loc='upper left')
+        plt.axis([0.5, 366.5, 0, 24])
+        if year != 2004:
+            plt.xticks([])
+        else:
+            plt.xticks([1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366],
+                       [str((x - 1) % 12 + 1) + '/1' for x in range(1, 14)])
+        plt.yticks([0, 8, 16], [0, 8, 16])
+    plt.show()
+
+
 z0 = bf.magline(0)
 if __name__ == '__main__':
-    output_champ_ck()
+    # output_champ_ck()
+    draw_kind_time()

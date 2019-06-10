@@ -153,10 +153,10 @@ def sort_data3(text):
         else:
             restart_static(curve)
 
-    # month = adata.month - 1
-    # for lon in range(24):
-    #     abin[month][lon].append(lonbin[lon])
-    return lonbin
+    month = adata.month - 1
+    for lon in range(24):
+        abin[month][lon].append(lonbin[lon])
+    # return lonbin
 
 
 def sort_data4(text):
@@ -332,17 +332,18 @@ def static_epb():
         for name in os.listdir(path):
             print(year, name)
             try:
-                res[str(year) + name[2:5]] = sort_data3(read_roc(name, path + '/'))
+                sort_data3(read_roc(name, path + '/'))
+                # res[str(year) + name[2:5]] = sort_data3(read_roc(name, path + '/'))
             except:
                 print('Error for File')
-    # for i in range(12):
-    #     for j in range(24):
-    #         print(abin[i][j])
-    # fill_PBoccurence(abin, outfilename)
-    with open('EPB.txt', 'w+') as f:
-        for k in res.keys():
-            print(k)
-            f.write(k + ' ' + ' '.join([str(x) for x in res[k]]) + '\n')
+    for i in range(12):
+        for j in range(24):
+            print(abin[i][j])
+    fill_PBoccurence(abin, outfilename)
+    # with open('EPB.txt', 'w+') as f:
+    #     for k in res.keys():
+    #         print(k)
+    #         f.write(k + ' ' + ' '.join([str(x) for x in res[k]]) + '\n')
 
 
 def draw_V_PB_BD_Ne():
@@ -393,10 +394,10 @@ def draw_one_panel(filename):
 
 
 if __name__ == '__main__':
-    outfilename = 'EPB_1999_2004_a.txt'
-    # static_epb()
+    outfilename = 'EPB_2001_2004_a.txt'
+    static_epb()
     # static_lgNe()
     # static_Vdrift()
     # draw_one_panel(outfilename)
     # plt.show()
-    draw_V_PB_BD_Ne()
+    # draw_V_PB_BD_Ne()

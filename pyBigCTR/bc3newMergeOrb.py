@@ -377,7 +377,7 @@ def draw(chadata, rocdata, lt):
     return ck
 
 
-def write_champ_prf():
+def write_cha_prf_info():
     for year in range(2001, 2005):
         for month in range(1, 13):
             for day in range(1, 32):
@@ -397,7 +397,7 @@ dlonlsit = []
 dltlist = []
 if __name__ == '__main__':
     outpath = 'D:/Program/BigCTR/Text/champOrb/'
-    write_champ_prf()
+    write_cha_prf_info()
     # for i in range(17, 24):
     #     print(i)
     #     fout = open('D:\\program\\BigCTR\\LTdevelop\\' + str(i * 1.0) + '.txt', 'w+')

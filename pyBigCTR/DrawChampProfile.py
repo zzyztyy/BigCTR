@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cycler import cycler
 
-from basicFun import get_one_orb, get_curve_kind, repair_bubble2
+from basicFun import get_one_orb, get_curve_kind, repair_bubble
 
 
 def read_cha(lct, what):
@@ -16,11 +16,12 @@ def read_cha(lct, what):
     all_lines = len(text)
 
     if what == 1 or 0:
-        count = 0
+        count = {'flat': 0, 'deep': 0, 'bubble': 0, 'error': 0}
         while temp_line < all_lines:
             cha, temp_line = get_one_orb(text, temp_line)
-            plot_profile(cha, what)
-            count += 1
+            if cha.ck != 'loss':
+                plot_profile(cha, what)
+                count[cha.ck] += 1
         return count
     elif what == 2:
         ctrs = []
@@ -37,7 +38,7 @@ def read_cha(lct, what):
         while temp_line < len(text):
             cha, temp_line = get_one_orb(text, temp_line)
             mlat, den = cha.mlat_den()
-            if len(mlat) > 50:
+            if len(mlat) > 35:
                 static_lct(mlat, den, num_ck)
         return num_ck
     else:
@@ -60,7 +61,7 @@ def plot_profile(cha, what):
         if what == 1:
             plt.plot(mlat, den, alpha=0.1, c=color, lw=1)
         elif what == 0:
-            den_rp, step = repair_bubble2(mlat, den)
+            den_rp, step = repair_bubble(mlat, den)
             plt.plot(mlat, den_rp, linewidth=1, linestyle='--', c=color, alpha=0.5)
             plt.scatter(mlat, den_rp, alpha=0.5, c='k', marker='+')
             plt.plot(mlat, den, linewidth=1, c=color, alpha=0.1)
@@ -82,7 +83,7 @@ def static_lct(mlat, den, num_ck):
         if -27 < mlat[i] < 27:
             den0.append(den[i])
             mlat0.append(mlat[i])
-    den_rp, step = repair_bubble2(mlat0, den0)
+    den_rp, step = repair_bubble(mlat0, den0)
     ck, ctr = get_curve_kind(mlat0, den0)
     num_ck[ck][step] += 1
 
@@ -148,7 +149,9 @@ def draw_all_profiles():
     for i in range(18, 24):
         plt.subplot(3, 2, tran[i - 18])
         count = read_cha(i, 1)
-        print(i, count)
+        print(i)
+        for k in count.keys():
+            print(k, count[k])
         plt.title('LT = ' + str(i), size=10)
         if tran[i - 18] == 5 or tran[i - 18] == 6:
             plt.xlabel('Mlat')
@@ -162,7 +165,9 @@ def draw_all_profiles():
 def draw_single_profile():
     for lct in range(18, 24):
         count = read_cha(lct, 0)
-        print(lct, count)
+        print(lct)
+        for k in count.keys():
+            print(k, count[k])
 
 
 def draw_num_ck():
@@ -180,8 +185,26 @@ def draw_num_ck():
         plt.close()
 
 
+def bar_plot():
+    arr = [[1026, 19, 0],
+           [740, 213, 12],
+           [511, 290, 134],
+           [501, 243, 225],
+           [735, 170, 233],
+           [760, 84, 125]]
+    arr = np.array(arr).transpose()
+    localtime = [18, 19, 20, 21, 22, 23]
+    plt.bar(localtime, arr[0] + arr[1] + arr[2], color='b', width=0.5)
+    plt.bar(localtime, arr[0] + arr[1], color='r', width=0.5)
+    plt.bar(localtime, arr[0], color='g', width=0.5)
+    plt.axis([17, 24, 0, 1400])
+    plt.legend(['Bubble', 'Deep', 'Flat'])
+    plt.show()
+
+
 if __name__ == '__main__':
     # draw_ctr()
-    draw_all_profiles()
+    # draw_all_profiles()
     # draw_single_profile()
     # draw_num_ck()
+    bar_plot()

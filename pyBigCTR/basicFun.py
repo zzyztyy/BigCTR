@@ -29,7 +29,6 @@ class Orb(object):
         if self.name == 'CHAMP':
             xtemp = 8
             ytemp = 10
-            # alldata = [x.split() for x in alldata]
         elif self.name == 'ROCSAT':
             xtemp = 4
             ytemp = 3
@@ -40,20 +39,17 @@ class Orb(object):
         plt.plot(lat, den)
         plt.show()
 
-    def mlat_den(self):  # 仅限axx.x.txt类文件使用
+    def mlat_den(self):
         xtemp = 0
         ytemp = 0
         alldata = self.data
         if self.name == 'CHAMP':
             xtemp = 11
             ytemp = 10
-            # alldata = [x.split() for x in alldata]
         else:
             print('Error')
         mlat = [float(x[xtemp]) for x in alldata]
         den = [np.log10(float(x[ytemp])) for x in alldata]
-        # plt.plot(mlat, den)
-        # plt.show()
         return mlat, den
 
     def clear(self):
@@ -74,9 +70,7 @@ class Orb(object):
 
 def get_one_orb(text, startline):
     cha = Orb()
-    # nextline = startline
     a = text[startline].split()
-    # print(text[startline])
     cha.name = a[0]
     cha.lenth = int(a[1])
     cha.date = a[2]
@@ -87,7 +81,6 @@ def get_one_orb(text, startline):
         a = text[startline + i + 2].split()
         cha.insert([float(x) for x in a])
     nextline = startline + cha.lenth + 2
-    # print(text[startline+cha.lenth+2])
     mlat0, den0 = cha.mlat_den()
     mlat, den = [], []
     for i in range(len(mlat0)):
@@ -97,19 +90,23 @@ def get_one_orb(text, startline):
     if len(mlat) > 35:
         cha.ck, cha.ctr = get_curve_kind(mlat, den)
     else:
-        cha.ck, cha.ctr = 'less', -2
+        cha.ck, cha.ctr = 'loss', -2
     return cha, nextline
 
 
-def repair_bubble(den, den_d2):
-    step = 0
-    den1 = den.copy()
-    while max(abs(den_d2)) > 0.2 and step < 49:
-        ind = np.argmax(abs(den_d2))
-        den1[ind + 1] = 0.5 * (den1[ind] + den1[ind + 2])
-        den_d2 = den1[:-2] + den1[2:] - 2 * den1[1:-1]
-        step += 1
-    return den1, den_d2, step
+def repair_bubble(mlat, den):
+    filted_data = abs((np.array([den[0]] + den[:-1]) + np.array(den[1:] + [den[-1]])) / 2 - den)
+    filted_data[0] = 0
+    filted_data[-1] = 0
+    bubble_count = sum([x > 0.1 for x in filted_data])
+    x, y = [], []
+    for i in range(len(filted_data)):
+        if filted_data[i] < 0.1:
+            x.append(mlat[i])
+            y.append(den[i])
+    fun = interp1d(x, y, 'linear')
+    den_rp = [fun(z) for z in mlat]
+    return den_rp, bubble_count
 
 
 def get_curve_kind(mlat, den):
@@ -118,15 +115,13 @@ def get_curve_kind(mlat, den):
         南侧峰或北侧峰不存在
     flat:
         1.谷值和南侧峰或北侧峰高度相等，可能是单峰或无峰
-        2.ctr <= 5
+        2.ctr <= 6
     deep:
-        ctr > 5
+        ctr > 6
     bubble:
         修补次数大于8.1
     """
-    den = np.array(den)
-    den_d2 = den[:-2] + den[2:] - 2 * den[1:-1]
-    den_rp, den_d2_rp, step = repair_bubble(den, den_d2)
+    den_rp, step = repair_bubble(mlat, den)
 
     if step > 8.1:
         return 'bubble', -1
@@ -148,20 +143,17 @@ def get_curve_kind(mlat, den):
     if not north_peak_index or not south_peak_index:
         return 'error', 0
 
-    # vally_index = -1
     vally_value = 7
     for i in range(len(mlat)):
         if mlat[south_peak_index] <= mlat[i] <= mlat[north_peak_index]:
             if vally_value > den_rp[i]:
                 vally_value = den_rp[i]
-                # vally_index = i
 
     if vally_value >= north_peak_value or vally_value >= south_peak_value:
         return 'flat', 1
 
     ctr = (10 ** north_peak_value + 10 ** south_peak_value) / (2 * 10 ** vally_value)
-    # print(ctr)
-    if ctr > 5:
+    if ctr > 6:
         return 'deep', ctr
     else:
         return 'flat', ctr
@@ -172,7 +164,7 @@ def readfile(filename):
         return f.readlines()
 
 
-def readfilenomagstorm(filename, date, value):
+def read_file_nomagstorm(filename, date, value):
     year = int(date[:4])
     # month = int(date[4:6])
     # day = int(date[6:])
@@ -202,6 +194,20 @@ def sort2(l1, l2):
     return l1
 
 
+def find_sorted_position(the_list, target):
+    low = 0
+    high = len(the_list) - 1
+    while low <= high:
+        mid = (high + low) // 2
+        if the_list[mid] == target:
+            return mid
+        elif target < the_list[mid]:
+            high = mid - 1
+        else:
+            low = mid + 1
+    return low
+
+
 def magstormexcle():
     value = np.array([[[False] * 24] * 366] * 12)
     for i in range(12):
@@ -215,7 +221,7 @@ def magstormexcle():
 
 
 def is_magstorm(year, day, hour, value):
-    return value[int(year - 1999)][day][hour]
+    return value[int(year - 1999)][day - 1][hour]
 
 
 def smooth(y, box_pts):
@@ -279,7 +285,9 @@ def dip_lat(lat, lon, alt, year=2005.):
 
 if __name__ == '__main__':
     # mse = magstormexcle()
-    # a=readfilenomagstorm('CH-ME-2-PLP+2002-01-01_2.dat', '20020101', mse)
+    # print(is_magstorm(2004, 366, 12, mse))
+    # print(orderday('20010101'))
     # print(a)
     # print(a[1].split())
-    dip_lat(0, 0, 0)
+    # print(julday('20010201'))
+    print(dip_lat(-11.95, -76.87, 0))
