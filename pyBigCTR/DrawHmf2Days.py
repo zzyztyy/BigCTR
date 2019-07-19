@@ -162,6 +162,8 @@ def draw_hmf2_alt_time(num):
         plt.text(800, (23 - lct) * 200 + 420, 'LT=' + str(lct), size=12)
     plt.title('CHAMP_alt & Jacamarca_hmF2')
     plt.legend(['hmF2', 'H_sat'])
+    plt.xlabel('Date')
+    plt.ylabel('Altitude/km')
     # plt.show()
 
 

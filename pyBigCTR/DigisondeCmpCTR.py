@@ -261,7 +261,7 @@ def draw_dalt_lt():
 
 
 if __name__ == '__main__':
-    # draw_dalt_lt()
+    draw_dalt_lt()
     # cmp_alt(0)
     # plt.show()
-    static_f0f2()
+    # static_f0f2()

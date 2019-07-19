@@ -182,9 +182,9 @@ def draw_champ():
         for text in texts:
             a = text.split()
             date, ck, ctr, lon, lct = a[0], a[1], float(a[2]), float(a[3]), float(a[4])
-            lon = (lon + 180) % 360 - 180
+            lon = ((lon + 180) % 360 - 180 * 0) / 7.5
             days = bf.julday(date_tran(date))
-            doy = bf.orderday(date_tran(date))
+            doy = bf.orderday(date_tran(date)) / 15.26
             year = int(date[:4])
             if year <= 2004 and lct > 18.5:
                 if ck == 'flat':
@@ -194,21 +194,21 @@ def draw_champ():
                 if ck == 'deep':
                     dot_d['x'].append(doy)
                     dot_d['y'].append(lon)
-                    dot_d['c'].append('r')
+                    dot_d['c'].append(np.log10(ctr))
                 if ck == 'bubble':
                     dot_b['x'].append(doy)
                     dot_b['y'].append(lon)
-                    dot_b['c'].append('r')
-    plt.subplot(3, 1, 1)
-    s = 20
-    plt.scatter(dot_f['y'], dot_f['x'], c='g', alpha=0.15, s=s)
-    plt.axis([-180, 180, 0, 366])
-    plt.subplot(3, 1, 2)
-    plt.scatter(dot_d['y'], dot_d['x'], c='r', alpha=0.5, s=s)
-    plt.axis([-180, 180, 0, 366])
-    plt.subplot(3, 1, 3)
-    plt.scatter(dot_b['y'], dot_b['x'], c='b', alpha=0.5, s=s)
-    plt.axis([-180, 180, 0, 366])
+                    dot_b['c'].append('b')
+    # plt.subplot(3, 1, 1)
+    s = 12
+    # plt.scatter(dot_f['y'], dot_f['x'], c='k', alpha=1, s=s)
+    # plt.axis([-180, 180, 0, 366])
+    # plt.subplot(3, 1, 2)
+    # plt.scatter(dot_d['y'], dot_d['x'], c='k', alpha=1, s=s, marker='o')
+    # plt.axis([-180, 180, 0, 366])
+    # plt.subplot(3, 1, 3)
+    plt.scatter(dot_b['y'], dot_b['x'], c='k', alpha=1, s=s)
+    # plt.axis([-180, 180, 0, 366])
     # plt.axis([-180, 180, 0, 366])
     # plt.title('CHAMP')
     # plt.colorbar()
@@ -264,8 +264,8 @@ def draw_one_pannel(file_name, vmax, vmin, loss):
             # res.append([loss for x in a])
             # plt.plot(a + np.zeros(len(a))-80*i)
             # plt.plot(np.zeros(len(a))-80*i)
-    plt.imshow(res, cmap='gnuplot2', aspect='auto', vmax=vmax, vmin=vmin)
-    # C = plt.contourf(res, 15, cmap='hot', vmax=vmax, vmin=vmin)
+    # plt.imshow(res, cmap='gnuplot2', aspect='auto', vmax=vmax, vmin=vmin)
+    C = plt.contour(res, 15, cmap='brg_r', vmax=vmax, vmin=vmin)
     # plt.clabel(C, inline=True, fontsize=10)
     plt.colorbar()
     plt.xticks(np.arange(0, 25, 4) - 0.5, range(-180, 181, 60))
@@ -277,15 +277,15 @@ def draw_one_pannel(file_name, vmax, vmin, loss):
 
 def test():
     plt.figure(figsize=[10, 6])
-    plt.subplots_adjust(left=0.05, bottom=0.08, right=0.96, top=0.93, wspace=0.1, hspace=0.34)
+    plt.subplots_adjust(left=0.05, bottom=0.08, right=1.0, top=0.93, wspace=0.05, hspace=0.34)
     plt.subplot(2, 2, 1)
     draw_champ()
     plt.axis([-180, 180, 0, 366])
     plt.xticks(np.arange(-180, 181, 60), range(-180, 181, 60))
     plt.yticks([15, 45, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349], range(1, 13))
     plt.title('CHAMP')
-    plt.scatter([], [], c=[], cmap='jet')
-    plt.colorbar()
+    # plt.scatter([], [], c=[], cmap='jet')
+    # plt.colorbar()
     # plt.xlim([100, 1260])
     plt.subplot(2, 2, 4)
     draw_one_pannel('V_drift_2001_2004.txt', 50, -20, 1000)
@@ -307,14 +307,17 @@ def test():
     plt.plot(np.ones(366) * (-76.87), np.arange(366), c='k', ls='--', lw=2)
     for i in range(1, 4):
         plt.subplot(2, 2, i + 1)
-        plt.plot(np.ones(14) * (-76.87 + 180) / 15, np.arange(-1, 13), c='k', ls='--', lw=2)
+        plt.plot(np.ones(14) * (-76.87 + 180 - 7.5) / 15, np.arange(-1, 13), c='k', ls='--', lw=2)
     plt.show()
 
 
 if __name__ == '__main__':
     # draw_vdrift()
     # test()
+    # draw_one_pannel('EPB_2001_2004_a.txt', 1.0, 0.1, 1000)
+    # draw_one_pannel('V_drift_2001_2004.txt', 50, -20, 1000)
     draw_champ()
     plt.show()
+    # plt.show()
     # write_rocsat_sl()
     # draw_one_pannel('vdrift_plot.txt')

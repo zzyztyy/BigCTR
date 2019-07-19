@@ -283,6 +283,72 @@ def dip_lat(lat, lon, alt, year=2005.):
     return mlat
 
 
+def idw2d(x, y, value, x_min, x_max, y_min, y_max, x_bins, y_bins, mode=0, max_distant=3):
+    """
+    :param x: input x
+    :param y: input y
+    :param value: input value
+    :param out_x: output x
+    :param out_y: output y
+    :param mode: 0 for no round, 1 for x round, 2 for y round, 3 for x and y round
+    :return: np.array() out_x * out_y
+    """
+    res = np.zeros([x_bins, y_bins])
+    x_dis = (x_max - x_min) / x_bins
+    y_dis = (y_max - y_min) / y_bins
+    x_r = [(temp - x_min) / x_dis for temp in x]
+    y_r = [(temp - y_min) / y_dis for temp in y]
+    N = len(x)
+    for i in range(x_bins):
+        for j in range(y_bins):
+            # x_temp = i+0.5
+            # y_temp = j+0.5
+            # sum0 = 0
+            # sum1 = 0
+            # for k in range(N):
+            #     distant_x = x_r[k] - x_temp
+            #     distant_y = y_r[k] - y_temp
+            #     if mode == 1 or mode == 3:
+            #         distant_x = min(abs(distant_x-x_bins), abs(distant_x),  abs(distant_x+x_bins))
+            #     if mode == 2 or mode == 3:
+            #         distant_y = min(abs(distant_y - y_bins), abs(distant_y), abs(distant_y + y_bins))
+            #     distant = np.sqrt(distant_x**2+distant_y**2)
+            #     sum0 += value[k]/distant
+            #     sum1 += 1/distant
+            # res[i][j] = sum0/sum1
+            res[i][j] = idw2d_1dot(x, y, value, x_min, x_max, y_min, y_max, x_bins, y_bins,
+                                   x_min + (i + 0.5) * x_dis, y_min + (j + 0.5) * y_dis, mode=mode,
+                                   max_distant=max_distant)
+    return res.transpose()
+
+
+def idw2d_1dot(x, y, value, x_min, x_max, y_min, y_max, x_bins, y_bins, dot_x, dot_y, mode=0, max_distant=3):
+    x_dis = (x_max - x_min) / x_bins
+    y_dis = (y_max - y_min) / y_bins
+    x_r = [(temp - x_min) / x_dis for temp in x]
+    y_r = [(temp - y_min) / y_dis for temp in y]
+    N = len(x)
+    x_temp = (dot_x - x_min) / x_dis
+    y_temp = (dot_y - y_min) / y_dis
+    sum0 = 0
+    sum1 = 0
+    for k in range(N):
+        distant_x = x_r[k] - x_temp
+        distant_y = y_r[k] - y_temp
+        if mode == 1 or mode == 3:
+            distant_x = min(abs(distant_x - x_bins), abs(distant_x), abs(distant_x + x_bins))
+        if mode == 2 or mode == 3:
+            distant_y = min(abs(distant_y - y_bins), abs(distant_y), abs(distant_y + y_bins))
+        distant = np.sqrt(distant_x ** 2 + distant_y ** 2)
+        if distant < max_distant:
+            sum0 += value[k] / distant
+            sum1 += 1 / distant
+    if sum1 != 0:
+        return sum0 / sum1
+    else:
+        return None
+
+
 if __name__ == '__main__':
     # mse = magstormexcle()
     # print(is_magstorm(2004, 366, 12, mse))
@@ -290,4 +356,22 @@ if __name__ == '__main__':
     # print(a)
     # print(a[1].split())
     # print(julday('20010201'))
-    print(dip_lat(-11.95, -76.87, 0))
+    # print(dip_lat(0, -76.87, 0))
+    x = np.random.rand(500) * 20 - 10
+    y = np.random.rand(500) * 40 - 20
+    z = [np.sin((x[i] + y[i]) * 0.3) for i in range(500)]
+    ans = np.array([[np.sin((i + j - 29) * 0.3) for i in range(20)] for j in range(40)])
+    dot_x = np.random.random() * 20 - 10
+    dot_y = np.random.random() * 40 - 20
+    res = idw2d(x, y, z, -10, 10, -20, 20, 20, 40, max_distant=1)
+    plt.subplot(3, 1, 1)
+    plt.pcolor(res, cmap='jet')
+    plt.colorbar()
+    plt.subplot(3, 1, 2)
+    plt.scatter(x + 10, y + 20, c=z, cmap='jet')
+    plt.colorbar()
+    plt.subplot(3, 1, 3)
+    plt.pcolor(ans - res, cmap='bwr', vmax=1, vmin=-1)
+    plt.colorbar()
+    # plt.scatter(x + 10, y + 20, c=z, cmap='jet')
+    plt.show()

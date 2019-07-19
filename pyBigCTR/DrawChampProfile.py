@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cycler import cycler
 
-from basicFun import get_one_orb, get_curve_kind, repair_bubble
+from basicFun import get_one_orb, get_curve_kind, repair_bubble, julday
+from fourPic import date_tran
 
 
 def read_cha(lct, what):
@@ -15,13 +16,19 @@ def read_cha(lct, what):
     temp_line = 0
     all_lines = len(text)
 
-    if what == 1 or 0:
+    if what == 1 or what == 0:
         count = {'flat': 0, 'deep': 0, 'bubble': 0, 'error': 0}
         while temp_line < all_lines:
             cha, temp_line = get_one_orb(text, temp_line)
             if cha.ck != 'loss':
-                plot_profile(cha, what)
-                count[cha.ck] += 1
+                date = cha.date
+                days = julday(date_tran(date))
+                lon = ((cha.midlon + 180) % 360 - 180)
+                if 100 < days < 200 or 500 < days < 600:
+                    if -65 < lon < 50:
+                        plot_profile(cha, what)
+                        count[cha.ck] += 1
+        print(count)
         return count
     elif what == 2:
         ctrs = []
@@ -68,10 +75,11 @@ def plot_profile(cha, what):
             plt.scatter(mlat, den, alpha=0.5, c='k')
             title = cha.ck + '_' + cha.date + '_' + str(round(cha.midlt, 2)) + '_' + str(round(cha.midlon, 2))
             plt.title(title)
-            plt.show()
+            # plt.show()
             print(title)
             plt.savefig(
-                'D:/Program/BigCTR/Picture/champProfile/' + str(min(23, round(cha.midlt))) + '/' + title + '.png')
+                # 'D:/Program/BigCTR/Picture/champProfile/' + str(min(23, round(cha.midlt))) + '/' + title + '.png')
+                'D:/Program/BigCTR/Picture/champProfileCheck/' + title + '.png')
             plt.close()
         else:
             print("error in 'plot_profile'")
@@ -197,7 +205,10 @@ def bar_plot():
     plt.bar(localtime, arr[0] + arr[1] + arr[2], color='b', width=0.5)
     plt.bar(localtime, arr[0] + arr[1], color='r', width=0.5)
     plt.bar(localtime, arr[0], color='g', width=0.5)
-    plt.axis([17, 24, 0, 1400])
+    plt.axis([17.1, 23.9, 0, 1400])
+    plt.xlabel('Local Time')
+    plt.ylabel('Counts')
+    plt.text(16.5, 1500, '(b)', fontsize=16)
     plt.legend(['Bubble', 'Deep', 'Flat'])
     plt.show()
 
@@ -205,6 +216,6 @@ def bar_plot():
 if __name__ == '__main__':
     # draw_ctr()
     # draw_all_profiles()
-    # draw_single_profile()
+    draw_single_profile()
     # draw_num_ck()
-    bar_plot()
+    # bar_plot()
