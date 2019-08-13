@@ -401,8 +401,8 @@ if __name__ == '__main__':
     # for i in range(17, 24):
     #     print(i)
     #     fout = open('D:\\program\\BigCTR\\LTdevelop\\' + str(i * 1.0) + '.txt', 'w+')
-    #     test(i * 1.)
+    #     draw_champ_lon_time(i * 1.)
     #     fout.close()
     #     fout = open('D:\\program\\BigCTR\\LTdevelop\\' + str(i + 0.5) + '.txt', 'w+')
-    #     test(i + 0.5)
+    #     draw_champ_lon_time(i + 0.5)
     #     fout.close()

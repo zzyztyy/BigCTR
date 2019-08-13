@@ -5,20 +5,19 @@ import datetime
 import os
 
 import basicFun as bf
-from bc3newMergeOrb import datetran
 
 oschamp = 'D:/SpaceScienceData/CHAMP/CH-ME-2-PLP/'
 
 
 def get_hmf2_days():
     file_path = 'D:/SpaceScienceData/Digisonde/hmf2/'
-    name = 'JI91J.TXT'
+    name = 'CAJ2M.TXT'
     file_name = file_path + name
     days_start = bf.julday('20010515')
     days_end = bf.julday('20041231')
     hmf2s = {}
     for lct in range(18, 24):
-        hmf2s[lct] = [[] for x in range(days_start, days_end + 1)]
+        hmf2s[lct] = [[] for _ in range(days_start, days_end + 1)]
 
     with open(file_name) as f:
         texts = f.readlines()
@@ -30,15 +29,16 @@ def get_hmf2_days():
                 days = bf.julday(date.replace('.', ''))
                 hh, mm, ss = [int(x) for x in clock.split(':')]
                 ut = hh + mm / 60 + ss / 3600
-                lct = round(ut - 76.87 / 15) % 24
+                lct = round(ut - 45.01 / 15) % 24
                 if 18 <= lct <= 24 and days <= days_end and not bf.is_magstorm(year, doy, hh, value):
                     hmf2s[round(lct)][days - days_start].append(float(hmf2))
-    res = {'hmf2': [], 'days': []}
+    res = {'hmf2': [], 'days': [], 'lct': []}
     for lct in range(18, 24):
         for x in range(days_start, days_end + 1):
             if len(hmf2s[lct][x - days_start]) > 0:
                 res['hmf2'].append(np.mean(hmf2s[lct][x - days_start]))
                 res['days'].append(x)
+                res['lct'].append(lct)
         # hmf2s[lct] = [np.mean(hmf2s[lct][x]) for x in range(days_end-days_start+1)]
         # res['hmf2'] = bf.smooth(res, 11)
         print(lct)
@@ -46,7 +46,7 @@ def get_hmf2_days():
             print(res['days'][i], round(res['hmf2'][i], 2))
         res['hmf2'].clear()
         res['days'].clear()
-        # plt.plot(res['days'], np.array(res) + 150*(23-lct))
+        # plt.scatter(res['days'], np.array(res['hmf2']) + 150*(23-lct))
     return res
 
 
@@ -108,7 +108,7 @@ def get_cha_alt():
 
 
 def draw_hmf2_alt_time(num):
-    files = ['lct_hmf2_Jacamarca.txt', 'Fortaleza.txt', 'SaoLuis.txt']
+    files = ['lct_hmf2_Jacamarca.txt', 'Fortaleza.txt', 'SaoLuis.txt', 'CaoBalista.txt']
     colors = ['r', 'g', 'b', 'y']
     path = 'D:/Program/BigCTR/Text/alt_hmf2_lcat/'
     cha_file = 'cha_alt.txt'

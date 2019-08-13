@@ -79,7 +79,7 @@ def static_f0f2():
     f2 = 'JI91J.txt'
 
     cha_list = []
-    for i in range(18, 24):
+    for i in range(19, 24):
         cha_list = cha_list + read_file(dig_lon, i)
 
     dig_data = read_digisonde(dig_lon, f2, 'D:/SpaceScienceData/Digisonde/hmf2/')
@@ -261,7 +261,7 @@ def draw_dalt_lt():
 
 
 if __name__ == '__main__':
-    draw_dalt_lt()
+    # draw_dalt_lt()
     # cmp_alt(0)
     # plt.show()
-    # static_f0f2()
+    static_f0f2()

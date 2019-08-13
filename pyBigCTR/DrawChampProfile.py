@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cycler import cycler
 
-from basicFun import get_one_orb, get_curve_kind, repair_bubble, julday
-from fourPic import date_tran
+from basicFun import get_one_orb, get_curve_kind, repair_bubble, julday, date_tran, orderday
 
 
 def read_cha(lct, what):
@@ -22,12 +21,12 @@ def read_cha(lct, what):
             cha, temp_line = get_one_orb(text, temp_line)
             if cha.ck != 'loss':
                 date = cha.date
-                days = julday(date_tran(date))
+                # days = julday(date_tran(date))
                 lon = ((cha.midlon + 180) % 360 - 180)
-                if 100 < days < 200 or 500 < days < 600:
-                    if -65 < lon < 50:
-                        plot_profile(cha, what)
-                        count[cha.ck] += 1
+                doy = orderday(date)
+                if (152 < doy < 213) and (-45 < lon < -15):
+                    plot_profile(cha, what)
+                    count[cha.ck] += 1
         print(count)
         return count
     elif what == 2:
@@ -56,7 +55,7 @@ def plot_profile(cha, what):
     mlat0, den0 = cha.mlat_den()
     mlat, den = [], []
     for i in range(len(mlat0)):
-        if -27 < mlat0[i] < 27:
+        if -47 < mlat0[i] < 47:
             den.append(den0[i])
             mlat.append(mlat0[i])
 
@@ -69,18 +68,19 @@ def plot_profile(cha, what):
             plt.plot(mlat, den, alpha=0.1, c=color, lw=1)
         elif what == 0:
             den_rp, step = repair_bubble(mlat, den)
-            plt.plot(mlat, den_rp, linewidth=1, linestyle='--', c=color, alpha=0.5)
-            plt.scatter(mlat, den_rp, alpha=0.5, c='k', marker='+')
-            plt.plot(mlat, den, linewidth=1, c=color, alpha=0.1)
-            plt.scatter(mlat, den, alpha=0.5, c='k')
-            title = cha.ck + '_' + cha.date + '_' + str(round(cha.midlt, 2)) + '_' + str(round(cha.midlon, 2))
-            plt.title(title)
+            plt.plot(mlat, den_rp, linewidth=2, linestyle='-', c=color, alpha=0.5)
+            # plt.scatter(mlat, den_rp, alpha=0.5, c=color, marker='+')
+            plt.plot(mlat, den, linewidth=1, c=color, alpha=0.5, ls='--')
+            plt.scatter(mlat, den, alpha=0.5, c=color, s=8)
+            # title = cha.ck + '_' + cha.date + '_' + str(round(cha.midlt, 2)) + '_' + str(round(cha.midlon, 2))
+            # plt.title(title)
             # plt.show()
-            print(title)
-            plt.savefig(
-                # 'D:/Program/BigCTR/Picture/champProfile/' + str(min(23, round(cha.midlt))) + '/' + title + '.png')
-                'D:/Program/BigCTR/Picture/champProfileCheck/' + title + '.png')
-            plt.close()
+            # print(title)
+            # plt.savefig(
+            #     # 'D:/Program/BigCTR/Picture/champProfile/' + str(min(23, round(cha.midlt))) + '/' + title + '.png')
+            #     # 'D:/Program/BigCTR/Picture/champProfileCheck/' + title + '.png')
+            #     'picked.png')
+            # plt.close()
         else:
             print("error in 'plot_profile'")
 
@@ -213,9 +213,26 @@ def bar_plot():
     plt.show()
 
 
+def draw_picked_profiles():
+    with open('D:/Program/BigCTR/Text/champOrb/picked.txt', 'r') as f:
+        texts = f.readlines()
+    temp_line = 0
+    all_lines = len(texts)
+    plt.plot([1], [1], c='r')
+    plt.plot([1], [1], c='g')
+    plt.plot([1], [1], c='b')
+    while temp_line < all_lines:
+        cha, temp_line = get_one_orb(texts, temp_line)
+        if cha.ck != 'loss':
+            plot_profile(cha, 0)
+    plt.legend(['Deep', 'Flat', 'Bubble'])
+    plt.show()
+
+
 if __name__ == '__main__':
     # draw_ctr()
     # draw_all_profiles()
-    draw_single_profile()
+    # draw_single_profile()
     # draw_num_ck()
     # bar_plot()
+    draw_picked_profiles()
